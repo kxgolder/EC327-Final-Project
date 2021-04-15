@@ -2,6 +2,8 @@
 #include <iostream>
 #include <chrono>
 #include <ctime>
+#include <string>
+#include <vector>
 using std::cin;
 using std::cout;
 using std::to_string;
@@ -18,7 +20,29 @@ const int rec_y = 40;
 const int rec_width = 150;
 const int rec_length = 300;
 
+/*
+void enter_water(float &x){
+
+
+}
+*/
+
+class Event {      
+  public:            
+    string day;
+    string description;      
+     
+};
+
+
+
+
+
+
 int main(){
+
+// Water consumed so far;
+  float water_consumed = (float)0;
 
 sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
 
@@ -37,29 +61,41 @@ if (!app_background.loadFromFile("pastel.jpg")){
 };
 app_background.setSmooth(true);
 
-sf::Texture water_texture; // water progress bar
+sf::Texture water_texture; // Water progress bar
 if (!water_texture.loadFromFile("water.jpg",sf::IntRect(0,120,480,240))){
   cout << "didnt work\n";
 };
-app_background.setSmooth(true);
+water_texture.setSmooth(true);
+
+sf::Texture button_texture; // Button for water
+if (!button_texture.loadFromFile("button.jpg",sf::IntRect(60,60,240,220))){
+  cout << "didnt work\n";
+};
+button_texture.setSmooth(true);
 
 // Background Shape
 sf::RectangleShape background;
 background.setSize(sf::Vector2f(app_width,app_length));
 background.setTexture(&app_background);
 
-// water progress bar
+// Water progress bar
 sf::RectangleShape water_bar;
-water_bar.setSize(sf::Vector2f(app_width-2*rec_x,50));
+water_bar.setSize(sf::Vector2f(app_width-2*rec_x-80,50));
 water_bar.setPosition(rec_x,rec_length+rec_y+40);
 water_bar.setTexture(&water_texture);
+
+
+// Water button
+sf::CircleShape water_button(40);
+water_button.setTexture(&button_texture);
+water_button.setPosition(app_width-rec_x*2-20,rec_length+rec_y+30);
 
 
 // For the calendar shapes
 vector<sf::RectangleShape> rect_vec;
 sf::RectangleShape rectangle;
 rectangle.setSize(sf::Vector2f(rec_width, rec_length));
-rectangle.setFillColor(sf::Color::Red);
+/*rectangle.setFillColor(sf::Color::Red);*/
 rectangle.setOutlineThickness(1);
 rectangle.setPosition(rec_x,rec_y);
 rectangle.setTexture(&wood_background);
@@ -69,7 +105,7 @@ int day_x = rec_x+50;
 int day_y = 50;
 sf::Text Sun;
 sf::Font font;
-font.loadFromFile("/usr/share/fonts/truetype/ubuntu/Ubuntu-BI.ttf");
+font.loadFromFile("/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf");
 Sun.setFont(font);
 Sun.setString("Sun");
 Sun.setFillColor(sf::Color::Black);
@@ -99,10 +135,19 @@ for (int i = 0;i<6;i++){
 }
 
 
+/// just checking
+sf::RectangleShape rectangle2;
+rectangle2.setSize(sf::Vector2f(rec_width, rec_length));
+rectangle2.setFillColor(sf::Color::Red);
+rectangle2.setOutlineThickness(1);
+rectangle2.setPosition(rec_x,rec_y);
 
 
-window.setFramerateLimit(60);
+
+bool display_water_box = false;
+window.setFramerateLimit(15);
 while(window.isOpen()){
+sf::Event event;
 
 // background image
 window.draw(background);
@@ -118,19 +163,48 @@ window.draw(Sun);
 for (int i = 0; i < day.size();i++)
   window.draw(day.at(i));
 
+// water button
+window.draw(water_button);
+
+if(display_water_box)
+  window.draw(rectangle2);
+
+if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+{
+  sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+  sf::FloatRect bounds = rectangle2.getGlobalBounds();
+  if (bounds.contains(mouse)){
+    cout <<"hi\n";
+    display_water_box = false;
+  }
+}
+
+// Check if in water button region
+if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+{
+  sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+  sf::FloatRect bounds = water_button.getGlobalBounds();
+  if (bounds.contains(mouse)){
+    cout <<"hi\n";
+    display_water_box = true;
+  }
+}
+
+/*if (!wait)*/
 
 window.display();
 
 
+
+
 // Check if application is closed
-sf::Event event;
+
   while (window.pollEvent(event)) {
   if (event.type == sf::Event::Closed)
       window.close();
 }
 
 }
-
 return 0;
 }
 
