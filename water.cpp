@@ -197,9 +197,18 @@ int main() {
   rectangle2.setOutlineThickness(1);
   rectangle2.setPosition(rec_x, rec_y);
 
+sf::String water_input;
+sf::Text water_output;
+water_output.setPosition(200,200);
+water_output.setFillColor(sf::Color::Red);
+water_output.setFont(font);
+water_output.setFillColor(sf::Color::Black);
+water_output.setOutlineColor(sf::Color::White);
+water_output.setOutlineThickness(1);
 
 
   bool display_water_box = false;
+  bool disp_text = false;
   window.setFramerateLimit(15);
 
   while(window.isOpen()) {
@@ -234,26 +243,43 @@ int main() {
 
     if(display_water_box)
       window.draw(rectangle2);
+    if(disp_text)
+  window.draw(water_output);
 
     while(window.pollEvent(event)) {
 
 /////////////////////////////////////////////////////////////////////
-
-
-      if(event.type == sf::Event::TextEntered) {
-        if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
-          cout << "ASCII character typed: " << static_cast<int>(event.text.unicode) << "\n";
-          tmp = static_cast<char>(event.text.unicode);
-          water_consumed.append(tmp); // need a time buffer to prevent double clicks
-          cout << water_consumed << "\n";
+// need to add a boolean that indicates we are in enter water state, keep enter available
+      // for the other input events
+        if(event.type == sf::Event::TextEntered) {
+          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+            tmp = static_cast<char>(event.text.unicode);
+            water_consumed.append(tmp); // need a time buffer to prevent double clicks
+            cout << water_consumed << "\n";
+            water_input +=event.text.unicode;
+            water_output.setString(water_input);
+            disp_text = true;
+          }
+          else if (event.text.unicode == 13) {
+            if(water_consumed.size() == 0){
+              display_water_box = false;
+              disp_text = false;
+            }
+            if(water_consumed.size()>0){
+              update_water(water_consumed, total_water);
+              water_consumed.clear();
+              display_water_box = false;
+              disp_text = false;
+            }
+          }
+          else if (event.text.unicode == 8){
+            if(water_consumed.size()>0){
+              water_consumed.pop_back();
+              water_input.erase(water_input.getSize() - 1, 1);
+              water_output.setString(water_input);
         }
-        if (event.text.unicode == 13) {
-          update_water(water_consumed, total_water);
-          water_consumed.clear();
-          display_water_box = false;
         }
-      }
-
+}
 /////////////////////////////////////////////////////
 
 // check if in pop-up
