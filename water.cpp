@@ -4,6 +4,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <math.h>
 using std::cin;
 using std::cout;
 using std::to_string;
@@ -34,6 +35,12 @@ class Event {
      
 };
 
+void update_water(string w,float& u){
+  float added_water;
+  added_water = std::stof(w);
+  added_water = floorf(added_water * 100) / 100;
+  u = u+added_water; 
+}
 
 
 
@@ -41,10 +48,12 @@ class Event {
 
 int main(){
 
-// Water consumed so far;
-  float water_consumed = (float)0;
-
 sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
+window.setKeyRepeatEnabled(false);
+
+float total_water = (float)0;
+string water_consumed;
+string tmp;
 
 
 // Textures 
@@ -146,6 +155,7 @@ rectangle2.setPosition(rec_x,rec_y);
 
 bool display_water_box = false;
 window.setFramerateLimit(15);
+
 while(window.isOpen()){
 sf::Event event;
 
@@ -163,12 +173,37 @@ window.draw(Sun);
 for (int i = 0; i < day.size();i++)
   window.draw(day.at(i));
 
+
 // water button
 window.draw(water_button);
 
-if(display_water_box)
-  window.draw(rectangle2);
+/////////////////////////////////////////////////////////////////////
 
+
+
+
+if(display_water_box){
+  window.draw(rectangle2);
+    if(event.type == sf::Event::TextEntered){
+      if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46){
+        cout << "ASCII character typed: " << static_cast<int>(event.text.unicode) <<"\n";
+        tmp = static_cast<char>(event.text.unicode);
+        water_consumed.append(tmp); // need a time buffer to prevent double clicks
+        cout<<water_consumed<<"\n";
+      }
+      if (event.text.unicode == 13){
+        update_water(water_consumed,total_water);
+        water_consumed.clear();
+        display_water_box = false;
+      }
+    }
+} 
+
+
+
+/////////////////////////////////////////////////////
+/*if (event.text.unicode == 58)
+    display_water_box = false;*/
 if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
 {
   sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -205,6 +240,7 @@ window.display();
 }
 
 }
+cout<< total_water<<"\n";
 return 0;
 }
 
