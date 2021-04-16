@@ -13,7 +13,7 @@ public:
   }
   Textbox(int size, sf::Color color, bool sel) {
     textbox.setCharacterSize(size);
-    /*textbox.setColor(color);*/
+    /*textbox.setColor(color);*/ 
     isSelected = sel;
     if (sel) {
       textbox.setString("_");
