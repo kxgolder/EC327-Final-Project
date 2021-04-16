@@ -144,50 +144,24 @@ int main() {
     a = a + rec_width + (float)350 / calendar_spaces;
   }
 
-// create add event
+// create directions to add event
   sf::Text add_event;
   add_event.setFont(font);
-  add_event.setString("Add Event:");
+  add_event.setString("Add Event: Enter Day, Time (with am/pm), and Event in the Textbox below, separated by commas");
   add_event.setCharacterSize(20);
   add_event.setFillColor(sf::Color::Black);
   add_event.setPosition(60, 470);
-
-// create other labels
-// Day
-  sf::Text add_day;
-  add_day.setFont(font);
-  add_day.setString("Day");
-  add_day.setCharacterSize(20);
-  add_day.setFillColor(sf::Color::Black);
-  add_day.setPosition(190, 470);
-// Time
-  sf::Text add_time;
-  add_time.setFont(font);
-  add_time.setString("Time");
-  add_time.setCharacterSize(20);
-  add_time.setFillColor(sf::Color::Black);
-  add_time.setPosition(190, 540);
-// Event
-  sf::Text add_ev;
-  add_ev.setFont(font);
-  add_ev.setString("Event");
-  add_ev.setCharacterSize(20);
-  add_ev.setFillColor(sf::Color::Black);
-  add_ev.setPosition(190, 610);
-
-// add boxes around textbox
-  sf::RectangleShape day_box(sf::Vector2f(300, 40));
-  day_box.setOutlineColor(sf::Color::Black);
-  day_box.setOutlineThickness(5);
-  day_box.setPosition(270, 450);
-  sf::RectangleShape time_box(sf::Vector2f(300, 40));
-  time_box.setOutlineColor(sf::Color::Black);
-  time_box.setOutlineThickness(5);
-  time_box.setPosition(270, 520);
-  sf::RectangleShape ev_box(sf::Vector2f(300, 40));
+  sf::Text add_info;
+  add_info.setFont(font);
+  add_info.setString("Example: Monday, 12-3 pm, Tennis Practice");
+  add_info.setCharacterSize(20);
+  add_info.setFillColor(sf::Color::Black);
+  add_info.setPosition(180, 510);
+// add rectangle around textbox
+  sf::RectangleShape ev_box(sf::Vector2f(800, 40));
   ev_box.setOutlineColor(sf::Color::Black);
   ev_box.setOutlineThickness(5);
-  ev_box.setPosition(270, 590);
+  ev_box.setPosition(180, 550);
 
 
 /// just checking
@@ -232,13 +206,9 @@ water_output.setOutlineThickness(1);
 // water button
     window.draw(water_button);
 
-// draw text: add_event, add_day, add_time, add_ev & boxes
+// draw text: add_event & boxes
     window.draw(add_event);
-    window.draw(add_day);
-    window.draw(add_time);
-    window.draw(add_ev);
-    window.draw(day_box);
-    window.draw(time_box);
+    window.draw(add_info);
     window.draw(ev_box);
 
     if(display_water_box)
