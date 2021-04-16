@@ -144,6 +144,51 @@ int main() {
     a = a + rec_width + (float)350 / calendar_spaces;
   }
 
+// create add event
+  sf::Text add_event;
+  add_event.setFont(font);
+  add_event.setString("Add Event:");
+  add_event.setCharacterSize(20);
+  add_event.setFillColor(sf::Color::Black);
+  add_event.setPosition(60, 470);
+
+// create other labels
+// Day
+  sf::Text add_day;
+  add_day.setFont(font);
+  add_day.setString("Day");
+  add_day.setCharacterSize(20);
+  add_day.setFillColor(sf::Color::Black);
+  add_day.setPosition(190, 470);
+// Time
+  sf::Text add_time;
+  add_time.setFont(font);
+  add_time.setString("Time");
+  add_time.setCharacterSize(20);
+  add_time.setFillColor(sf::Color::Black);
+  add_time.setPosition(190, 540);
+// Event
+  sf::Text add_ev;
+  add_ev.setFont(font);
+  add_ev.setString("Event");
+  add_ev.setCharacterSize(20);
+  add_ev.setFillColor(sf::Color::Black);
+  add_ev.setPosition(190, 610);
+
+// add boxes around textbox
+  sf::RectangleShape day_box(sf::Vector2f(300, 40));
+  day_box.setOutlineColor(sf::Color::Black);
+  day_box.setOutlineThickness(5);
+  day_box.setPosition(270, 450);
+  sf::RectangleShape time_box(sf::Vector2f(300, 40));
+  time_box.setOutlineColor(sf::Color::Black);
+  time_box.setOutlineThickness(5);
+  time_box.setPosition(270, 520);
+  sf::RectangleShape ev_box(sf::Vector2f(300, 40));
+  ev_box.setOutlineColor(sf::Color::Black);
+  ev_box.setOutlineThickness(5);
+  ev_box.setPosition(270, 590);
+
 
 /// just checking
   sf::RectangleShape rectangle2;
@@ -178,27 +223,36 @@ int main() {
 // water button
     window.draw(water_button);
 
- if(display_water_box) 
-    window.draw(rectangle2);
+// draw text: add_event, add_day, add_time, add_ev & boxes
+    window.draw(add_event);
+    window.draw(add_day);
+    window.draw(add_time);
+    window.draw(add_ev);
+    window.draw(day_box);
+    window.draw(time_box);
+    window.draw(ev_box);
+
+    if(display_water_box)
+      window.draw(rectangle2);
 
     while(window.pollEvent(event)) {
 
 /////////////////////////////////////////////////////////////////////
 
-     
-        if(event.type == sf::Event::TextEntered) {
-          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
-            cout << "ASCII character typed: " << static_cast<int>(event.text.unicode) << "\n";
-            tmp = static_cast<char>(event.text.unicode);
-            water_consumed.append(tmp); // need a time buffer to prevent double clicks
-            cout << water_consumed << "\n";
-          }
-          if (event.text.unicode == 13) {
-            update_water(water_consumed, total_water);
-            water_consumed.clear();
-            display_water_box = false;
-          }
+
+      if(event.type == sf::Event::TextEntered) {
+        if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+          cout << "ASCII character typed: " << static_cast<int>(event.text.unicode) << "\n";
+          tmp = static_cast<char>(event.text.unicode);
+          water_consumed.append(tmp); // need a time buffer to prevent double clicks
+          cout << water_consumed << "\n";
         }
+        if (event.text.unicode == 13) {
+          update_water(water_consumed, total_water);
+          water_consumed.clear();
+          display_water_box = false;
+        }
+      }
 
 /////////////////////////////////////////////////////
 
@@ -228,10 +282,10 @@ int main() {
       if (event.type == sf::Event::Closed)  // close
         window.close();
 
-     
+
 
     }
-     window.display();
+    window.display();
   }
   cout << total_water << "\n";
   return 0;
