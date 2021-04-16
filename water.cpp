@@ -209,7 +209,7 @@ water_output.setOutlineThickness(1);
 
   bool display_water_box = false;
   bool disp_text = false;
-  window.setFramerateLimit(15);
+  window.setFramerateLimit(60);
 
   while(window.isOpen()) {
     sf::Event event;
