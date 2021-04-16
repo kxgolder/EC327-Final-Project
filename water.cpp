@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <locale>
 using std::cin;
 using std::cout;
 using std::to_string;
@@ -157,12 +158,18 @@ int main() {
   add_info.setCharacterSize(20);
   add_info.setFillColor(sf::Color::Black);
   add_info.setPosition(180, 510);
-// add rectangle around textbox
-  sf::RectangleShape ev_box(sf::Vector2f(800, 40));
-  ev_box.setOutlineColor(sf::Color::Black);
-  ev_box.setOutlineThickness(5);
-  ev_box.setPosition(180, 550);
 
+// add line under user input
+  sf::RectangleShape line(sf::Vector2f(800, 2));
+  line.setOutlineColor(sf::Color::Black);
+  line.setFillColor(sf::Color::Black);
+  line.setPosition(180, 590);
+
+
+// add textbox
+  string input_text;
+  sf::Text text("", font);
+  sf::Clock clock;
 
 /// just checking
   sf::RectangleShape rectangle2;
@@ -171,14 +178,14 @@ int main() {
   rectangle2.setOutlineThickness(1);
   rectangle2.setPosition(rec_x, rec_y);
 
-sf::String water_input;
-sf::Text water_output;
-water_output.setPosition(200,200);
-water_output.setFillColor(sf::Color::Red);
-water_output.setFont(font);
-water_output.setFillColor(sf::Color::Black);
-water_output.setOutlineColor(sf::Color::White);
-water_output.setOutlineThickness(1);
+  sf::String water_input;
+  sf::Text water_output;
+  water_output.setPosition(200, 200);
+  water_output.setFillColor(sf::Color::Red);
+  water_output.setFont(font);
+  water_output.setFillColor(sf::Color::Black);
+  water_output.setOutlineColor(sf::Color::White);
+  water_output.setOutlineThickness(1);
 
 
   bool display_water_box = false;
@@ -209,47 +216,59 @@ water_output.setOutlineThickness(1);
 // draw text: add_event & boxes
     window.draw(add_event);
     window.draw(add_info);
-    window.draw(ev_box);
+    window.draw(line);
 
     if(display_water_box)
       window.draw(rectangle2);
     if(disp_text)
-  window.draw(water_output);
+      window.draw(water_output);
 
     while(window.pollEvent(event)) {
+
+      //// code for textbox
+      if (event.type == sf::Event::TextEntered) {
+        if (std::isprint(event.text.unicode))
+          input_text += event.text.unicode;
+      } else if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::BackSpace) {
+          if (!input_text.empty())
+            input_text.pop_back();
+        }
+        if (event.key.code == sf::Keyboard::Return) {
+          cout << input_text << "\n";
+        }
+      }
 
 /////////////////////////////////////////////////////////////////////
 // need to add a boolean that indicates we are in enter water state, keep enter available
       // for the other input events
-        if(event.type == sf::Event::TextEntered) {
-          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
-            tmp = static_cast<char>(event.text.unicode);
-            water_consumed.append(tmp); // need a time buffer to prevent double clicks
-            cout << water_consumed << "\n";
-            water_input +=event.text.unicode;
+      if(event.type == sf::Event::TextEntered) {
+        if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+          tmp = static_cast<char>(event.text.unicode);
+          water_consumed.append(tmp); // need a time buffer to prevent double clicks
+          cout << water_consumed << "\n";
+          water_input += event.text.unicode;
+          water_output.setString(water_input);
+          disp_text = true;
+        } else if (event.text.unicode == 13) {
+          if(water_consumed.size() == 0) {
+            display_water_box = false;
+            disp_text = false;
+          }
+          if(water_consumed.size() > 0) {
+            update_water(water_consumed, total_water);
+            water_consumed.clear();
+            display_water_box = false;
+            disp_text = false;
+          }
+        } else if (event.text.unicode == 8) {
+          if(water_consumed.size() > 0) {
+            water_consumed.pop_back();
+            water_input.erase(water_input.getSize() - 1, 1);
             water_output.setString(water_input);
-            disp_text = true;
           }
-          else if (event.text.unicode == 13) {
-            if(water_consumed.size() == 0){
-              display_water_box = false;
-              disp_text = false;
-            }
-            if(water_consumed.size()>0){
-              update_water(water_consumed, total_water);
-              water_consumed.clear();
-              display_water_box = false;
-              disp_text = false;
-            }
-          }
-          else if (event.text.unicode == 8){
-            if(water_consumed.size()>0){
-              water_consumed.pop_back();
-              water_input.erase(water_input.getSize() - 1, 1);
-              water_output.setString(water_input);
         }
-        }
-}
+      }
 /////////////////////////////////////////////////////
 
 // check if in pop-up
@@ -281,6 +300,22 @@ water_output.setOutlineThickness(1);
 
 
     }
+    static sf::Time text_effect_time;
+    static bool show_cursor;
+
+    text_effect_time += clock.restart();
+
+    if (text_effect_time >= sf::seconds(0.5f)) {
+      show_cursor = !show_cursor;
+      text_effect_time = sf::Time::Zero;
+    }
+
+    text.setString(input_text + (show_cursor ? '_' : ' '));
+    text.setPosition(190, 550);
+    text.setFillColor(sf::Color::Blue);
+
+
+    window.draw(text);
     window.display();
   }
   cout << total_water << "\n";
