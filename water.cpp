@@ -55,6 +55,9 @@ void update_water(string w, float& u, float& j) {
     u = u + added_water;
     j = u/watergoal;
   }
+  std::ofstream water_state("water_state.txt");
+  water_state<<u;
+  water_state.close();
 }
 
 
@@ -70,15 +73,17 @@ int main() {
 
   // Load in the state of water
   std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
-  if (water_in.is_open())
-  {
+  if (water_in.is_open()){
     while ( getline (water_in,load_water) )
     {
       cout << load_water;
     }
     water_in.close();
-    total_water = total_water+std::stof(load_water);
+    if (load_water.size()>0)
+      total_water = total_water+std::stof(load_water);
   }
+
+
   
   percent_water = total_water/watergoal;
 
@@ -350,9 +355,6 @@ int main() {
 ///////////////////////////////////////////////////////
 
       if (event.type == sf::Event::Closed){  // close
-        std::ofstream water_state("water_state.txt");
-        water_state<<total_water;
-        water_state.close();
         window.close();
       }
 
@@ -376,7 +378,6 @@ int main() {
     window.draw(text);
     window.display();
   }
-  cout << total_water << "\n";
   return 0;
 }
 
