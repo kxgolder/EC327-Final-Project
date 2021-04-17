@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <fstream>
 #include <locale>
 using std::cin;
 using std::cout;
@@ -21,6 +22,9 @@ const float rec_x = (float)350 / calendar_spaces;
 const int rec_y = 40;
 const int rec_width = 150;
 const int rec_length = 300;
+const int water_bar_length = app_width - 2 * rec_x - 80;
+
+const int watergoal = 16;
 
 
 class Event {
@@ -42,14 +46,14 @@ void update_water(string w, float& u, float& j) {
   if(w.size() == 1 & count == 1 | count>=2){
     added_water = 0;
     u = u + added_water;
-    j = u/16;
+    j = u/watergoal;
   }
   else{
     j = std::stof(w);
     added_water = std::stof(w);
     added_water = floorf(added_water * 100) / 100;
     u = u + added_water;
-    j = u/16;
+    j = u/watergoal;
   }
 }
 
@@ -58,14 +62,31 @@ void update_water(string w, float& u, float& j) {
 
 
 int main() {
-
-  sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
-
   float total_water = (float)0;
   float percent_water = (float)0;
+  string load_water;
   string water_consumed;
   string tmp;
 
+  // Load in the state of water
+  std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
+  if (water_in.is_open())
+  {
+    while ( getline (water_in,load_water) )
+    {
+      cout << load_water;
+    }
+    water_in.close();
+    total_water = total_water+std::stof(load_water);
+  }
+  
+  percent_water = total_water/watergoal;
+
+
+
+  sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
+
+  
 
 // Textures
   sf::Texture wood_background; // Background for weekdays
@@ -100,7 +121,6 @@ int main() {
 
 // Water progress bar
   sf::RectangleShape water_bar;
-  water_bar.setSize(sf::Vector2f(0, 50));
   water_bar.setPosition(rec_x, rec_length + rec_y + 40);
   water_bar.setTexture(&water_texture);
 
@@ -207,15 +227,15 @@ int main() {
   while(window.isOpen()) {
     sf::Event event;
   if(total_water>0){// moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
-    if(total_water>=16)
-      water_bar.setSize(sf::Vector2f(app_width - 2 * rec_x - 80, 50));
+    if(total_water>=watergoal)
+      water_bar.setSize(sf::Vector2f(water_bar_length, 50));
     else
-      water_bar.setSize(sf::Vector2f(percent_water*app_width - 2 * rec_x - 80, 50));
+      water_bar.setSize(sf::Vector2f(percent_water*water_bar_length, 50));
   }
 
 // background image
     window.draw(background);
-    window.draw(water_bar); // need to link this to the water input, cover up 16-remaining for a progress bar
+    window.draw(water_bar); // need to link this to the water input, cover up watergoal-remaining for a progress bar
 
 // Draw the boxes
     window.draw(rectangle);
@@ -329,9 +349,12 @@ int main() {
 
 ///////////////////////////////////////////////////////
 
-      if (event.type == sf::Event::Closed)  // close
+      if (event.type == sf::Event::Closed){  // close
+        std::ofstream water_state("water_state.txt");
+        water_state<<total_water;
+        water_state.close();
         window.close();
-
+      }
 
 
     }
