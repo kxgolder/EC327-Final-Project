@@ -30,11 +30,27 @@ class Event {
 
 };
 
-void update_water(string w, float& u) {
+void update_water(string w, float& u, float& j) {
+  
   float added_water;
-  added_water = std::stof(w);
-  added_water = floorf(added_water * 100) / 100;
-  u = u + added_water;
+  // check for multiple decimal inputs, return 0 if only decimal or multiples
+  int count = 0;
+  for (int i = 0;i<w.size();i++){
+    if(w.at(i)+0 == 46)
+      count = count+ 1;
+  }
+  if(w.size() == 1 & count == 1 | count>=2){
+    added_water = 0;
+    u = u + added_water;
+    j = u/16;
+  }
+  else{
+    j = std::stof(w);
+    added_water = std::stof(w);
+    added_water = floorf(added_water * 100) / 100;
+    u = u + added_water;
+    j = u/16;
+  }
 }
 
 
@@ -46,6 +62,7 @@ int main() {
   sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
 
   float total_water = (float)0;
+  float percent_water = (float)0;
   string water_consumed;
   string tmp;
 
@@ -83,7 +100,7 @@ int main() {
 
 // Water progress bar
   sf::RectangleShape water_bar;
-  water_bar.setSize(sf::Vector2f(app_width - 2 * rec_x - 80, 50));
+  water_bar.setSize(sf::Vector2f(0, 50));
   water_bar.setPosition(rec_x, rec_length + rec_y + 40);
   water_bar.setTexture(&water_texture);
 
@@ -165,15 +182,15 @@ int main() {
   sf::Clock clock;
 
 /// just checking
-  sf::RectangleShape rectangle2;
-  rectangle2.setSize(sf::Vector2f(rec_width, rec_length));
-  rectangle2.setFillColor(sf::Color::Red);
-  rectangle2.setOutlineThickness(1);
-  rectangle2.setPosition(rec_x, rec_y);
+  sf::RectangleShape water_box;
+  water_box.setSize(sf::Vector2f(100, 100));
+  water_box.setFillColor(sf::Color::Blue);
+  water_box.setOutlineThickness(1);
+  water_box.setPosition(900, 200);
 
   sf::String water_input;
   sf::Text water_output;
-  water_output.setPosition(200, 200);
+  water_output.setPosition(1000, 400);
   water_output.setFillColor(sf::Color::Red);
   water_output.setFont(font);
   water_output.setFillColor(sf::Color::Black);
@@ -184,12 +201,19 @@ int main() {
   bool display_water_box = false;
   bool disp_text = false;
   bool water_enter = false;
+  float per_bar = (float)0;
   window.setFramerateLimit(60);
 
   while(window.isOpen()) {
     sf::Event event;
+  if(total_water>0){// moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
+    if(total_water>=16)
+      water_bar.setSize(sf::Vector2f(app_width - 2 * rec_x - 80, 50));
+    else
+      water_bar.setSize(sf::Vector2f(percent_water*app_width - 2 * rec_x - 80, 50));
+  }
 
-    // background image
+// background image
     window.draw(background);
     window.draw(water_bar); // need to link this to the water input, cover up 16-remaining for a progress bar
 
@@ -212,14 +236,27 @@ int main() {
     window.draw(add_info);
     window.draw(line);
 
-    if(display_water_box)
-      window.draw(rectangle2);
+     window.draw(add_event);
+    window.draw(add_info);
+    window.draw(line);
+
+    if(display_water_box){
+      window.draw(water_box);
+      sf::FloatRect rectBounds = water_box.getGlobalBounds();
+      sf::FloatRect textBounds = water_output.getGlobalBounds();
+
+      water_output.setPosition(
+        rectBounds.left + (rectBounds.width / 2) - (textBounds.width / 2),
+        rectBounds.top + (rectBounds.height / 2) - textBounds.height);
+    }
     if(disp_text)
       window.draw(water_output);
 
+    // Events
     while(window.pollEvent(event)) {
 
       //// code for textbox // should this be the standard text entry?
+    if(!water_enter){  
       if (event.type == sf::Event::TextEntered) {
         if (std::isprint(event.text.unicode))
           input_text += event.text.unicode;
@@ -232,7 +269,7 @@ int main() {
           cout << input_text << "\n";
         }
       }
-
+    }
 /////////////////////////////////////////////////////////////////////
     if(water_enter) {
       if(event.type == sf::Event::TextEntered) {
@@ -250,8 +287,9 @@ int main() {
             water_enter = false;
           }
           if(water_consumed.size() > 0) {
-            update_water(water_consumed, total_water);
+            update_water(water_consumed, total_water,percent_water);
             water_consumed.clear();
+            water_input.clear();
             display_water_box = false;
             disp_text = false;
             water_enter = false;
@@ -270,7 +308,7 @@ int main() {
 // check if in pop-up
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        sf::FloatRect bounds = rectangle2.getGlobalBounds();
+        sf::FloatRect bounds = water_box.getGlobalBounds();
         if (bounds.contains(mouse)) {
           cout << "hi\n";
           display_water_box = false;
