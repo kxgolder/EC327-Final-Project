@@ -7,3 +7,6 @@
 
 water: water.cpp
 	g++ water.cpp -o water -lsfml-graphics -lsfml-window -lsfml-system
+
+# other: other.cpp
+# 	g++ other.cpp -o o -lsfml-graphics -lsfml-window -lsfml-system	

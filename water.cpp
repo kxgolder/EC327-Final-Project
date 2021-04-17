@@ -7,6 +7,8 @@
 #include <math.h>
 #include <fstream>
 #include <locale>
+#include "Button.h"
+#include "Textbox.h"
 using std::cin;
 using std::cout;
 using std::to_string;
@@ -67,6 +69,7 @@ void update_water(string w, float& u, float& j) {
 int main() {
   float total_water = (float)0;
   float percent_water = (float)0;
+  float per_bar = (float)0;
   string load_water;
   string water_consumed;
   string tmp;
@@ -91,9 +94,9 @@ int main() {
 
   sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
 
-  
+// TEXTURES
+///////////////////////////////////////////////////////////////
 
-// Textures
   sf::Texture wood_background; // Background for weekdays
   if (!wood_background.loadFromFile("wood.jpg")) {
     cout << "didnt work\n";
@@ -119,6 +122,21 @@ int main() {
   };
   button_texture.setSmooth(true);
 
+  sf::Texture clear_button_t; // Button for water
+  if (!clear_button_t.loadFromFile("b.png")) {
+    cout << "didnt work\n";
+  };
+  clear_button_t.setSmooth(true);
+
+  sf::Texture set_texture; // Button for water
+  if (!set_texture.loadFromFile("setting.png")) {
+    cout << "didnt work\n";
+  };
+  set_texture.setSmooth(true);
+/////////////////////////////////////////////////////////////
+
+// SHAPES
+////////////////////////////////////////////////////////////
 // Background Shape
   sf::RectangleShape background;
   background.setSize(sf::Vector2f(app_width, app_length));
@@ -130,7 +148,7 @@ int main() {
   water_bar.setTexture(&water_texture);
 
 
-// Water button
+// Water input button
   sf::CircleShape water_button(40);
   water_button.setTexture(&button_texture);
   water_button.setPosition(app_width - rec_x * 2 - 20, rec_length + rec_y + 30);
@@ -140,7 +158,6 @@ int main() {
   vector<sf::RectangleShape> rect_vec;
   sf::RectangleShape rectangle;
   rectangle.setSize(sf::Vector2f(rec_width, rec_length));
-  /*rectangle.setFillColor(sf::Color::Red);*/
   rectangle.setOutlineThickness(1);
   rectangle.setPosition(rec_x, rec_y);
   rectangle.setTexture(&wood_background);
@@ -157,6 +174,21 @@ int main() {
   Sun.setOutlineColor(sf::Color::White);
   Sun.setOutlineThickness(1);
   Sun.setPosition(day_x, day_y);
+
+
+// Button to clear the current water count
+  Button clear_button("Clear Water", { 100, 100 }, 15, sf::Color::Red,sf::Color::Black);
+  clear_button.setFont(font);
+  clear_button.setTexture(clear_button_t);
+  clear_button.setFillColor(sf::Color::Green);
+  clear_button.setPosition({app_width - rec_x * 2 - 20, rec_length + rec_y + 110 });
+
+// Setting button
+  Button settings("",{100,100},0,sf::Color::Black,sf::Color::Black);
+  settings.setFont(font);
+  settings.setTexture(set_texture);
+  settings.setPosition({1300,600});
+
 
 // Names for the Calendar boxes
   vector<string> days = {"Mon",
@@ -206,13 +238,14 @@ int main() {
   sf::Text text("", font);
   sf::Clock clock;
 
-/// just checking
+/// Box to show user what input of water is
   sf::RectangleShape water_box;
   water_box.setSize(sf::Vector2f(100, 100));
   water_box.setFillColor(sf::Color::Blue);
   water_box.setOutlineThickness(1);
   water_box.setPosition(900, 200);
 
+// Text user inputs in water box
   sf::String water_input;
   sf::Text water_output;
   water_output.setPosition(1000, 400);
@@ -222,11 +255,19 @@ int main() {
   water_output.setOutlineColor(sf::Color::White);
   water_output.setOutlineThickness(1);
 
-
+// Settings text box
+/*  Textbox settings_textbox(100,sf::Color::Red,1);
+  settings_textbox.setFont(font);
+  settings_textbox.setPosition({700,700});*/
+// DISPLAY BOOLEANS
+//////////////////////////////////////
   bool display_water_box = false;
   bool disp_text = false;
   bool water_enter = false;
-  float per_bar = (float)0;
+  bool display_settings_box = false;
+  bool flash_clear_water = false;
+ 
+///////////////////////////////////////////
   window.setFramerateLimit(60);
 
   while(window.isOpen()) {
@@ -237,7 +278,8 @@ int main() {
     else
       water_bar.setSize(sf::Vector2f(percent_water*water_bar_length, 50));
   }
-
+//DRAWING SHAPES
+///////////////////////////////////////////////////
 // background image
     window.draw(background);
     window.draw(water_bar); // need to link this to the water input, cover up watergoal-remaining for a progress bar
@@ -253,6 +295,9 @@ int main() {
       window.draw(day.at(i));
 
 
+// Settings butotn
+ settings.drawTo(window);
+
 // water button
     window.draw(water_button);
 
@@ -265,6 +310,7 @@ int main() {
     window.draw(add_info);
     window.draw(line);
 
+    // Dispaly Water input background box
     if(display_water_box){
       window.draw(water_box);
       sf::FloatRect rectBounds = water_box.getGlobalBounds();
@@ -274,8 +320,23 @@ int main() {
         rectBounds.left + (rectBounds.width / 2) - (textBounds.width / 2),
         rectBounds.top + (rectBounds.height / 2) - textBounds.height);
     }
+    // Display Water input
     if(disp_text)
       window.draw(water_output);
+
+    // clear button
+    clear_button.drawTo(window);
+    // Flash color on click of clear button
+    if(flash_clear_water){
+      clear_button.setFillColor(sf::Color::Green);
+      cout << "here\n";
+      flash_clear_water = false;
+    }
+
+
+  /*  
+    if(display_settings_box)
+      settings_textbox.drawTo(window);*/
 
     // Events
     while(window.pollEvent(event)) {
@@ -349,25 +410,46 @@ int main() {
         sf::FloatRect bounds = water_box.getGlobalBounds();
         if (bounds.contains(mouse)) {
           cout << "hi\n";
-          total_water = 0;
-          percent_water = 0; // placeholder for clear button
-          if (water_consumed.size()<1)
-            update_water("0", total_water,percent_water);
-          else
-             update_water(water_consumed, total_water,percent_water);
-         
           display_water_box = false;
-          disp_text = false;
           water_enter = false;
+          
         }
       }
     }
 
 ///////////////////////////////////////////////////////
+// Check if in clear water area
+     if(clear_button.isMouseOver(window)){
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+        clear_button.setFillColor(sf::Color::Red);
+        flash_clear_water = true;
+        total_water = 0;
+        percent_water = 0; // placeholder for clear button
+        if (water_consumed.size()<1)
+          update_water("0", total_water,percent_water);
+        else
+          update_water(water_consumed, total_water,percent_water);
+        cout<< "You are here\n";
 
-      if (event.type == sf::Event::Closed){  // close
-        window.close();
       }
+    }
+// Check if in settings area
+    if(settings.isMouseOver(window)){
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+        /*display_settings_box = true;*/
+        cout<< "You are here\n";
+
+      }
+    }
+
+    
+
+
+
+
+    if (event.type == sf::Event::Closed){  // close
+      window.close();
+    }
 
 
     }

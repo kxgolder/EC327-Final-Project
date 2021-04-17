@@ -17,11 +17,15 @@ public:
 
   }
 
-   void setFont(sf::Font &font) {
+  void setFont(sf::Font &font) {
     text.setFont(font);
   }
 
-  void setBackColor(sf::Color color) {
+  void setTexture(sf::Texture &texture){
+    button.setTexture(&texture);
+  }
+
+  void setFillColor(sf::Color color) {
     button.setFillColor(color);
   }
 
@@ -43,16 +47,10 @@ public:
   }
 
   bool isMouseOver(sf::RenderWindow &window) {
-    float mouseX = sf::Mouse::getPosition(window).x;
-    float mouseY = sf::Mouse::getPosition(window).y;
+    sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+    sf::FloatRect bounds = button.getGlobalBounds();
 
-    float btnPosX = button.getPosition().x;
-    float btnPosY = button.getPosition().y;
-
-    float btnxPosWidth = button.getPosition().x + button.getLocalBounds().width;
-    float btnyPosHeight = button.getPosition().y + button.getLocalBounds().height;
-
-  if (mouseX < btnxPosWidth && mouseX > btnPosX && btnPosY < btnyPosHeight && mouseY > btnPosY) {
+  if (bounds.contains(mouse)) {
     return true;
   }
   return false;
