@@ -231,7 +231,7 @@ int main() {
 
   while(window.isOpen()) {
     sf::Event event;
-  if(total_water>0){// moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
+  if(total_water>=0){// moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
     if(total_water>=watergoal)
       water_bar.setSize(sf::Vector2f(water_bar_length, 50));
     else
@@ -331,14 +331,18 @@ int main() {
 /////////////////////////////////////////////////////
 
 // check if in pop-up
+    if(water_enter){
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::FloatRect bounds = water_box.getGlobalBounds();
         if (bounds.contains(mouse)) {
           cout << "hi\n";
+          total_water = 0;
+          percent_water = 0; // placeholder for clear button
           display_water_box = false;
         }
       }
+    }
 ///////////////////////////////////////////////////////
 
 // Check if in water button region
