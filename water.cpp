@@ -329,22 +329,6 @@ int main() {
       }
     }
 /////////////////////////////////////////////////////
-
-// check if in pop-up
-    if(water_enter){
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-        sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        sf::FloatRect bounds = water_box.getGlobalBounds();
-        if (bounds.contains(mouse)) {
-          cout << "hi\n";
-          total_water = 0;
-          percent_water = 0; // placeholder for clear button
-          display_water_box = false;
-        }
-      }
-    }
-///////////////////////////////////////////////////////
-
 // Check if in water button region
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -355,6 +339,29 @@ int main() {
           water_enter = true;
         }
       }
+
+///////////////////////////////////////////////////////
+
+// check if in pop-up
+    if(water_enter){
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        sf::FloatRect bounds = water_box.getGlobalBounds();
+        if (bounds.contains(mouse)) {
+          cout << "hi\n";
+          total_water = 0;
+          percent_water = 0; // placeholder for clear button
+          if (water_consumed.size()<1)
+            update_water("0", total_water,percent_water);
+          else
+             update_water(water_consumed, total_water,percent_water);
+         
+          display_water_box = false;
+          disp_text = false;
+          water_enter = false;
+        }
+      }
+    }
 
 ///////////////////////////////////////////////////////
 
