@@ -22,12 +22,6 @@ const int rec_y = 40;
 const int rec_width = 150;
 const int rec_length = 300;
 
-/*
-void enter_water(float &x){
-
-
-}
-*/
 
 class Event {
  public:
@@ -50,7 +44,6 @@ void update_water(string w, float& u) {
 int main() {
 
   sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
-  window.setKeyRepeatEnabled(false);
 
   float total_water = (float)0;
   string water_consumed;
@@ -190,6 +183,7 @@ int main() {
 
   bool display_water_box = false;
   bool disp_text = false;
+  bool water_enter = false;
   window.setFramerateLimit(60);
 
   while(window.isOpen()) {
@@ -225,7 +219,7 @@ int main() {
 
     while(window.pollEvent(event)) {
 
-      //// code for textbox
+      //// code for textbox // should this be the standard text entry?
       if (event.type == sf::Event::TextEntered) {
         if (std::isprint(event.text.unicode))
           input_text += event.text.unicode;
@@ -240,8 +234,7 @@ int main() {
       }
 
 /////////////////////////////////////////////////////////////////////
-// need to add a boolean that indicates we are in enter water state, keep enter available
-      // for the other input events
+    if(water_enter) {
       if(event.type == sf::Event::TextEntered) {
         if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
           tmp = static_cast<char>(event.text.unicode);
@@ -254,12 +247,14 @@ int main() {
           if(water_consumed.size() == 0) {
             display_water_box = false;
             disp_text = false;
+            water_enter = false;
           }
           if(water_consumed.size() > 0) {
             update_water(water_consumed, total_water);
             water_consumed.clear();
             display_water_box = false;
             disp_text = false;
+            water_enter = false;
           }
         } else if (event.text.unicode == 8) {
           if(water_consumed.size() > 0) {
@@ -269,6 +264,7 @@ int main() {
           }
         }
       }
+    }
 /////////////////////////////////////////////////////
 
 // check if in pop-up
@@ -289,6 +285,7 @@ int main() {
         if (bounds.contains(mouse)) {
           cout << "hi\n";
           display_water_box = true;
+          water_enter = true;
         }
       }
 
