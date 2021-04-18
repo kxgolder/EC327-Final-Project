@@ -16,6 +16,7 @@ using std::string;
 using std::stoi;
 using std::vector;
 
+const int event_parts = 3;
 const int app_width = 1400;
 const int app_length = 700;
 const int calendar_spaces = 8;
@@ -36,6 +37,27 @@ class Event {
 
 };
 
+bool check_date(string date){
+ int month,
+ day,
+ year;
+ if(date.size()!= 10)
+  return 0;
+
+ month = stoi(date.substr(0,2));
+ day = stoi(date.substr(3,2));
+ year = stoi(date.substr(7));
+
+ cout<< month<< " "<< day<<" "<< year<< " \n";
+return 1;
+}
+
+
+bool check_time(string user_time){
+ // store the
+
+return 1;
+}
 void update_water(string w, float& u, float& j) {
 
   float added_water;
@@ -66,6 +88,7 @@ void update_water(string w, float& u, float& j) {
 
 
 int main() {
+  int count = 0;
   float total_water = (float)0;
   float percent_water = (float)0;
   float per_bar = (float)0;
@@ -230,7 +253,7 @@ int main() {
   add_event.setPosition(60, 470);
   sf::Text add_info;
   add_info.setFont(font);
-  add_info.setString("Example: Monday, 12-3 pm, Tennis Practice");
+  add_info.setString("Example: 12/23/2021, 12-3 pm, Tennis Practice");
   add_info.setCharacterSize(20);
   add_info.setFillColor(sf::Color::Black);
   add_info.setPosition(180, 510);
@@ -346,6 +369,7 @@ int main() {
       flash_clear_water = false;
     }
 
+// Draw input for event to window
     static sf::Time text_effect_time;
     static bool show_cursor;
 
@@ -368,31 +392,98 @@ int main() {
       if(display_settings_box)
         settings_textbox.drawTo(window);*/
 
-    window.display();
     // Events
     while(window.pollEvent(event)) {
 
 
-
-      //// code for textbox // should this be the standard text entry?
-      if(enter_event_bool) {
-        if(!water_enter) {
+ 
+      //// code for textbox // 
+    if(enter_event_bool) {
+      if(!water_enter) {
+        if (count == 0){
           if (event.type == sf::Event::TextEntered) {
-            if (std::isprint(event.text.unicode))
+            if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 32)
               input_text += event.text.unicode;
-          } else if (event.type == sf::Event::KeyPressed) {
+            } 
+          else if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::BackSpace) {
               if (!input_text.empty())
                 input_text.pop_back();
-            }
-            if (event.key.code == sf::Keyboard::Return) {
+           }
+          else if (event.key.code == sf::Keyboard::Return) {
+            if(check_date(input_text)){
+              count = count +1;
               cout << input_text << "\n";
               input_text.clear();
-              enter_event_bool = false;
-            }
+            } 
+            else 
+              input_text.clear();   
+          }
+           else if (event.key.code == sf::Keyboard::Escape){
+            input_text.clear();
+            enter_event_bool = false;
+            count = 0;
+          }
+          }
+        }
+
+        else if (count == 1){
+          if (event.type == sf::Event::TextEntered) {
+            if (event.text.unicode > 47 & event.text.unicode < 58 |
+              event.text.unicode == 97 | event.text.unicode == 109 |
+               event.text.unicode == 112)
+              input_text += event.text.unicode;
+            } 
+          else if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::BackSpace) {
+              if (!input_text.empty())
+                input_text.pop_back();
+           }
+          else if (event.key.code == sf::Keyboard::Return) {
+            if(check_time(input_text)){
+              count = count +1;
+              cout << input_text << "\n";
+              input_text.clear();
+            } 
+            else 
+              input_text.clear();   
+          }
+          else if (event.key.code == sf::Keyboard::Escape){
+            input_text.clear();
+            enter_event_bool = false;
+            count = 0;
+          }
+          }
+        }
+
+        else if (count == 2){
+          if (event.type == sf::Event::TextEntered) {
+            if (std::isprint(event.text.unicode))
+              input_text += event.text.unicode;
+            } 
+          else if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::BackSpace) {
+              if (!input_text.empty())
+                input_text.pop_back();
+           }
+          else if (event.key.code == sf::Keyboard::Return) {
+              count = count +1;
+              cout << input_text << "\n";
+              input_text.clear();  
+          }
+           else if (event.key.code == sf::Keyboard::Escape){
+            input_text.clear();
+            enter_event_bool = false;
+            count = 0;
+          }
           }
         }
       }
+      if (count == 3){
+        count = 0;
+       enter_event_bool = false;
+     }
+    }
 /////////////////////////////////////////////////////////////////////
       if(water_enter) {
         if(event.type == sf::Event::TextEntered) {
@@ -489,17 +580,12 @@ int main() {
         }
       }
 
-
-
-
-
-
       if (event.type == sf::Event::Closed) // close
         window.close();
 
-
     }
-/*     window.display();*/
+
+    window.display();
   }
   return 0;
 }
