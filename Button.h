@@ -7,16 +7,18 @@ public:
 
   }
 
-  Button(std::string t, sf::Vector2f size, int charSize, sf::Color bgColor, sf:: Color textColor) {
+  Button(std::string t, sf::Vector2f size, int charSize, sf:: Color textColor) {
     text.setString(t);
     text.setOutlineColor(textColor);
     text.setCharacterSize(charSize);
 
     button.setSize(size);
-    button.setFillColor(bgColor);
 
   }
 
+  void setColor(sf::Color color){
+    button.setFillColor(color);
+  }
   void setFont(sf::Font &font) {
     text.setFont(font);
   }

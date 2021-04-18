@@ -37,28 +37,27 @@ class Event {
 };
 
 void update_water(string w, float& u, float& j) {
-  
+
   float added_water;
   // check for multiple decimal inputs, return 0 if only decimal or multiples
   int count = 0;
-  for (int i = 0;i<w.size();i++){
-    if(w.at(i)+0 == 46)
-      count = count+ 1;
+  for (int i = 0; i < w.size(); i++) {
+    if(w.at(i) + 0 == 46)
+      count = count + 1;
   }
-  if(w.size() == 1 & count == 1 | count>=2){
+  if(w.size() == 1 & count == 1 | count >= 2) {
     added_water = 0;
     u = u + added_water;
-    j = u/watergoal;
-  }
-  else{
+    j = u / watergoal;
+  } else {
     j = std::stof(w);
     added_water = std::stof(w);
     added_water = floorf(added_water * 100) / 100;
     u = u + added_water;
-    j = u/watergoal;
+    j = u / watergoal;
   }
   std::ofstream water_state("water_state.txt");
-  water_state<<u;
+  water_state << u;
   water_state.close();
 }
 
@@ -76,19 +75,18 @@ int main() {
 
   // Load in the state of water
   std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
-  if (water_in.is_open()){
-    while ( getline (water_in,load_water) )
-    {
+  if (water_in.is_open()) {
+    while ( getline (water_in, load_water) ) {
       cout << load_water;
     }
     water_in.close();
-    if (load_water.size()>0)
-      total_water = total_water+std::stof(load_water);
+    if (load_water.size() > 0)
+      total_water = total_water + std::stof(load_water);
   }
 
 
-  
-  percent_water = total_water/watergoal;
+
+  percent_water = total_water / watergoal;
 
 
 
@@ -133,6 +131,13 @@ int main() {
     cout << "didnt work\n";
   };
   set_texture.setSmooth(true);
+
+// "Icon made by Freeplk from www.flaticon.com"
+  sf::Texture plus_event; // Button for water
+  if (!plus_event.loadFromFile("plus.png")) {
+    cout << "didnt work\n";
+  };
+  plus_event.setSmooth(true);
 /////////////////////////////////////////////////////////////
 
 // SHAPES
@@ -177,18 +182,22 @@ int main() {
 
 
 // Button to clear the current water count
-  Button clear_button("Clear Water", { 100, 100 }, 15, sf::Color::Red,sf::Color::Black);
+  Button clear_button("Clear Water", { 100, 100 }, 15, sf::Color::Black);
   clear_button.setFont(font);
   clear_button.setTexture(clear_button_t);
   clear_button.setFillColor(sf::Color::Green);
   clear_button.setPosition({app_width - rec_x * 2 - 20, rec_length + rec_y + 110 });
 
 // Setting button
-  Button settings("",{100,100},0,sf::Color::Black,sf::Color::Black);
+  Button settings("", {100, 100}, 0, sf::Color::Black);
   settings.setFont(font);
   settings.setTexture(set_texture);
-  settings.setPosition({1300,600});
+  settings.setPosition({1300, 600});
 
+// Event plus button
+  Button event_add("", {50, 50}, 0, sf::Color::Black);
+  event_add.setTexture(plus_event);
+  event_add.setPosition({1000, 450});
 
 // Names for the Calendar boxes
   vector<string> days = {"Mon",
@@ -256,9 +265,9 @@ int main() {
   water_output.setOutlineThickness(1);
 
 // Settings text box
-/*  Textbox settings_textbox(100,sf::Color::Red,1);
-  settings_textbox.setFont(font);
-  settings_textbox.setPosition({700,700});*/
+  /*  Textbox settings_textbox(100,sf::Color::Red,1);
+    settings_textbox.setFont(font);
+    settings_textbox.setPosition({700,700});*/
 // DISPLAY BOOLEANS
 //////////////////////////////////////
   bool display_water_box = false;
@@ -266,18 +275,19 @@ int main() {
   bool water_enter = false;
   bool display_settings_box = false;
   bool flash_clear_water = false;
- 
+  bool enter_event_bool = false;
+
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
 
   while(window.isOpen()) {
     sf::Event event;
-  if(total_water>=0){// moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
-    if(total_water>=watergoal)
-      water_bar.setSize(sf::Vector2f(water_bar_length, 50));
-    else
-      water_bar.setSize(sf::Vector2f(percent_water*water_bar_length, 50));
-  }
+    if(total_water >= 0) { // moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
+      if(total_water >= watergoal)
+        water_bar.setSize(sf::Vector2f(water_bar_length, 50));
+      else
+        water_bar.setSize(sf::Vector2f(percent_water * water_bar_length, 50));
+    }
 //DRAWING SHAPES
 ///////////////////////////////////////////////////
 // background image
@@ -296,22 +306,25 @@ int main() {
 
 
 // Settings butotn
- settings.drawTo(window);
+    settings.drawTo(window);
 
 // water button
     window.draw(water_button);
+
+// add event button
+    event_add.drawTo(window);
 
 // draw text: add_event & boxes
     window.draw(add_event);
     window.draw(add_info);
     window.draw(line);
 
-     window.draw(add_event);
+    window.draw(add_event);
     window.draw(add_info);
     window.draw(line);
 
     // Dispaly Water input background box
-    if(display_water_box){
+    if(display_water_box) {
       window.draw(water_box);
       sf::FloatRect rectBounds = water_box.getGlobalBounds();
       sf::FloatRect textBounds = water_output.getGlobalBounds();
@@ -327,68 +340,92 @@ int main() {
     // clear button
     clear_button.drawTo(window);
     // Flash color on click of clear button
-    if(flash_clear_water){
+    if(flash_clear_water) {
       clear_button.setFillColor(sf::Color::Green);
       cout << "here\n";
       flash_clear_water = false;
     }
 
+    static sf::Time text_effect_time;
+    static bool show_cursor;
 
-  /*  
-    if(display_settings_box)
-      settings_textbox.drawTo(window);*/
+    text_effect_time += clock.restart();
 
+   if(enter_event_bool) {
+    if (text_effect_time >= sf::seconds(0.5f)) {
+      show_cursor = !show_cursor;
+      text_effect_time = sf::Time::Zero;
+    }
+    text.setString(input_text + (show_cursor ? '_' : ' '));
+    window.draw(text);
+    text.setPosition(190, 550);
+    text.setFillColor(sf::Color::Blue);
+  }
+
+   
+
+    /*
+      if(display_settings_box)
+        settings_textbox.drawTo(window);*/
+
+    window.display();
     // Events
     while(window.pollEvent(event)) {
 
+
+
       //// code for textbox // should this be the standard text entry?
-    if(!water_enter){  
-      if (event.type == sf::Event::TextEntered) {
-        if (std::isprint(event.text.unicode))
-          input_text += event.text.unicode;
-      } else if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::BackSpace) {
-          if (!input_text.empty())
-            input_text.pop_back();
-        }
-        if (event.key.code == sf::Keyboard::Return) {
-          cout << input_text << "\n";
+      if(enter_event_bool) {
+        if(!water_enter) {
+          if (event.type == sf::Event::TextEntered) {
+            if (std::isprint(event.text.unicode))
+              input_text += event.text.unicode;
+          } else if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::BackSpace) {
+              if (!input_text.empty())
+                input_text.pop_back();
+            }
+            if (event.key.code == sf::Keyboard::Return) {
+              cout << input_text << "\n";
+              input_text.clear();
+              enter_event_bool = false;
+            }
+          }
         }
       }
-    }
 /////////////////////////////////////////////////////////////////////
-    if(water_enter) {
-      if(event.type == sf::Event::TextEntered) {
-        if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
-          tmp = static_cast<char>(event.text.unicode);
-          water_consumed.append(tmp); // need a time buffer to prevent double clicks
-          cout << water_consumed << "\n";
-          water_input += event.text.unicode;
-          water_output.setString(water_input);
-          disp_text = true;
-        } else if (event.text.unicode == 13) {
-          if(water_consumed.size() == 0) {
-            display_water_box = false;
-            disp_text = false;
-            water_enter = false;
-          }
-          if(water_consumed.size() > 0) {
-            update_water(water_consumed, total_water,percent_water);
-            water_consumed.clear();
-            water_input.clear();
-            display_water_box = false;
-            disp_text = false;
-            water_enter = false;
-          }
-        } else if (event.text.unicode == 8) {
-          if(water_consumed.size() > 0) {
-            water_consumed.pop_back();
-            water_input.erase(water_input.getSize() - 1, 1);
+      if(water_enter) {
+        if(event.type == sf::Event::TextEntered) {
+          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+            tmp = static_cast<char>(event.text.unicode);
+            water_consumed.append(tmp); // need a time buffer to prevent double clicks
+            cout << water_consumed << "\n";
+            water_input += event.text.unicode;
             water_output.setString(water_input);
+            disp_text = true;
+          } else if (event.text.unicode == 13) {
+            if(water_consumed.size() == 0) {
+              display_water_box = false;
+              disp_text = false;
+              water_enter = false;
+            }
+            if(water_consumed.size() > 0) {
+              update_water(water_consumed, total_water, percent_water);
+              water_consumed.clear();
+              water_input.clear();
+              display_water_box = false;
+              disp_text = false;
+              water_enter = false;
+            }
+          } else if (event.text.unicode == 8) {
+            if(water_consumed.size() > 0) {
+              water_consumed.pop_back();
+              water_input.erase(water_input.getSize() - 1, 1);
+              water_output.setString(water_input);
+            }
           }
         }
       }
-    }
 /////////////////////////////////////////////////////
 // Check if in water button region
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -404,72 +441,65 @@ int main() {
 ///////////////////////////////////////////////////////
 
 // check if in pop-up
-    if(water_enter){
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-        sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        sf::FloatRect bounds = water_box.getGlobalBounds();
-        if (bounds.contains(mouse)) {
-          cout << "hi\n";
-          display_water_box = false;
-          water_enter = false;
-          
+      if(water_enter) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+          sf::FloatRect bounds = water_box.getGlobalBounds();
+          if (bounds.contains(mouse)) {
+            cout << "hi\n";
+            display_water_box = false;
+            water_enter = false;
+
+          }
         }
       }
-    }
 
 ///////////////////////////////////////////////////////
 // Check if in clear water area
-     if(clear_button.isMouseOver(window)){
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-        clear_button.setFillColor(sf::Color::Red);
-        flash_clear_water = true;
-        total_water = 0;
-        percent_water = 0; // placeholder for clear button
-        if (water_consumed.size()<1)
-          update_water("0", total_water,percent_water);
-        else
-          update_water(water_consumed, total_water,percent_water);
-        cout<< "You are here\n";
+      if(clear_button.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          clear_button.setFillColor(sf::Color::Red);
+          flash_clear_water = true;
+          total_water = 0;
+          percent_water = 0; // placeholder for clear button
+          if (water_consumed.size() < 1)
+            update_water("0", total_water, percent_water);
+          else
+            update_water(water_consumed, total_water, percent_water);
+          cout << "You are here\n";
 
+        }
       }
-    }
+// Check if in add event area
+      if(event_add.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          enter_event_bool = true;
+          /*display_settings_box = true;*/
+          cout << "You are here\n";
+
+        }
+      }
+
 // Check if in settings area
-    if(settings.isMouseOver(window)){
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-        /*display_settings_box = true;*/
-        cout<< "You are here\n";
+      if(settings.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          /*display_settings_box = true;*/
+          cout << "You are here\n";
 
+        }
       }
-    }
-
-    
 
 
 
 
-    if (event.type == sf::Event::Closed){  // close
-      window.close();
-    }
+
+
+      if (event.type == sf::Event::Closed) // close
+        window.close();
 
 
     }
-    static sf::Time text_effect_time;
-    static bool show_cursor;
-
-    text_effect_time += clock.restart();
-
-    if (text_effect_time >= sf::seconds(0.5f)) {
-      show_cursor = !show_cursor;
-      text_effect_time = sf::Time::Zero;
-    }
-
-    text.setString(input_text + (show_cursor ? '_' : ' '));
-    text.setPosition(190, 550);
-    text.setFillColor(sf::Color::Blue);
-
-
-    window.draw(text);
-    window.display();
+/*     window.display();*/
   }
   return 0;
 }
