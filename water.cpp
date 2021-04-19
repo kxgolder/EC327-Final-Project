@@ -88,7 +88,7 @@ void update_water(string w, float& u, float& j) {
 
 
 int main() {
-  int count = 0;
+  int event_count = 0;
   float total_water = (float)0;
   float percent_water = (float)0;
   float per_bar = (float)0;
@@ -400,7 +400,7 @@ int main() {
       //// code for textbox // 
     if(enter_event_bool) {
       if(!water_enter) {
-        if (count == 0){
+        if (event_count == 0){
           if (event.type == sf::Event::TextEntered) {
             if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 32)
               input_text += event.text.unicode;
@@ -412,7 +412,7 @@ int main() {
            }
           else if (event.key.code == sf::Keyboard::Return) {
             if(check_date(input_text)){
-              count = count +1;
+              event_count = event_count +1;
               cout << input_text << "\n";
               input_text.clear();
             } 
@@ -422,12 +422,12 @@ int main() {
            else if (event.key.code == sf::Keyboard::Escape){
             input_text.clear();
             enter_event_bool = false;
-            count = 0;
+            event_count = 0;
           }
           }
         }
 
-        else if (count == 1){
+        else if (event_count == 1){
           if (event.type == sf::Event::TextEntered) {
             if (event.text.unicode > 47 & event.text.unicode < 58 |
               event.text.unicode == 97 | event.text.unicode == 109 |
@@ -441,7 +441,7 @@ int main() {
            }
           else if (event.key.code == sf::Keyboard::Return) {
             if(check_time(input_text)){
-              count = count +1;
+              event_count = event_count +1;
               cout << input_text << "\n";
               input_text.clear();
             } 
@@ -451,12 +451,12 @@ int main() {
           else if (event.key.code == sf::Keyboard::Escape){
             input_text.clear();
             enter_event_bool = false;
-            count = 0;
+            event_count = 0;
           }
           }
         }
 
-        else if (count == 2){
+        else if (event_count == 2){
           if (event.type == sf::Event::TextEntered) {
             if (std::isprint(event.text.unicode))
               input_text += event.text.unicode;
@@ -467,20 +467,20 @@ int main() {
                 input_text.pop_back();
            }
           else if (event.key.code == sf::Keyboard::Return) {
-              count = count +1;
+              event_count = event_count +1;
               cout << input_text << "\n";
               input_text.clear();  
           }
            else if (event.key.code == sf::Keyboard::Escape){
             input_text.clear();
             enter_event_bool = false;
-            count = 0;
+            event_count = 0;
           }
           }
         }
       }
-      if (count == 3){
-        count = 0;
+      if (event_count == 3){
+        event_count = 0;
        enter_event_bool = false;
      }
     }
