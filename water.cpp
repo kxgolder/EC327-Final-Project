@@ -9,12 +9,14 @@
 #include <locale>
 #include "Button.h"
 #include "Textbox.h"
+#include <sstream>
 using std::cin;
 using std::cout;
 using std::to_string;
 using std::string;
 using std::stoi;
 using std::vector;
+using std::stringstream;
 
 const int event_parts = 3;
 const int app_width = 1400;
@@ -52,12 +54,70 @@ bool check_date(string date){
 return 1;
 }
 
-
-bool check_time(string user_time){
- // store the
-
-return 1;
+// function to remoove spaces
+string removeSpaces(string str) 
+{
+    str.erase(remove(str.begin(), str.end(), ' '), str.end());
+    return str;
 }
+
+
+//function to check time input
+bool check_time(string user_time){
+  vector<string> vec, vec_first, vec_second;
+  stringstream ss(user_time);
+  string line;
+  // split string at '-'
+  while(std::getline(ss,line,'-')) {
+    vec.push_back(line);
+  }
+  // check there is a start and end time
+  if (vec.size() != 2)
+    return 0;
+
+  int first_hour, second_hour, first_min, second_min;
+  string first = removeSpaces(vec.at(0));
+  string second = removeSpaces(vec.at(1));
+  stringstream ss1(first);
+  // split start time into hour and min
+  while(std::getline(ss1,line,':')) {
+    vec_first.push_back(line);
+  }
+  // make sure there is an hour and min input
+  if (vec_first.size() != 2)
+    return 0;
+  first_hour = stoi(vec_first.at(0));
+  first_min = stoi(vec_first.at(1));
+  // check appropiate input
+  if (first_hour < 0 || first_hour > 23)
+    return 0;
+  if (first_min < 0 || first_min > 59)
+    return 0;
+
+  // do the same thing to end time
+  stringstream ss2(second);
+  while(std::getline(ss2,line,':')) {
+    vec_second.push_back(line);
+  }
+  if (vec_second.size() != 2)
+    return 0;
+  second_hour = stoi(vec_second.at(0));
+  second_min = stoi(vec_second.at(1));
+  if (second_hour < 0 || second_hour > 23)
+    return 0;
+  if (second_min < 0 || second_min > 59)
+    return 0;
+ 
+ // check that the start time is before end time
+  if (first_hour > second_hour)
+    return 0;
+
+  return 1;
+}
+
+
+
+
 void update_water(string w, float& u, float& j) {
 
   float added_water;
@@ -247,13 +307,13 @@ int main() {
 // create directions to add event
   sf::Text add_event;
   add_event.setFont(font);
-  add_event.setString("Add Event: Enter Day, Time (with am/pm), and Event in the Textbox below, separated by commas");
+  add_event.setString("Add Event: Enter Day, Time with minutes in 24-hour time, and Event in the Textbox below, separated by commas");
   add_event.setCharacterSize(20);
   add_event.setFillColor(sf::Color::Black);
   add_event.setPosition(60, 470);
   sf::Text add_info;
   add_info.setFont(font);
-  add_info.setString("Example: 12/23/2021, 12-3 pm, Tennis Practice");
+  add_info.setString("Example: 12/23/2021, 12:00 - 14:30, Tennis Practice");
   add_info.setCharacterSize(20);
   add_info.setFillColor(sf::Color::Black);
   add_info.setPosition(180, 510);
