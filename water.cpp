@@ -34,10 +34,27 @@ const int watergoal = 16;
 
 class Event {
  public:
-  string day;
-  string description;
+  string date,
+  time,
+  description;
+
+  float buttonx;
+  float buttony;
+// placeholder, difference between time/24
+
 
 };
+
+void create_event(string event_date, string event_time, string event_desc, Event& a){
+a.date = event_date;
+a.time = event_time;
+a.description = event_desc;
+
+a.buttonx = 150;
+a.buttony = 1;
+
+Button b(a.description,{a.buttonx,a.buttony},10,sf::Color::Black);
+}
 
 bool check_date(string date){
  int month,
@@ -176,6 +193,8 @@ int main() {
             event_time,
             event_desc;
  sf::Text confirm_event_text;
+ Event calendar_event;
+ vector<Event> calendar;
 
   // Load in the state of water
   std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
@@ -242,6 +261,18 @@ int main() {
     cout << "didnt work\n";
   };
   plus_event.setSmooth(true);
+
+  sf::Texture yes_add; // add event
+  if (!yes_add.loadFromFile("yes.png")) {
+    cout << "didnt work\n";
+  };
+  yes_add.setSmooth(true);
+
+  sf::Texture no_add; // dont add event
+  if (!no_add.loadFromFile("no.png")) {
+    cout << "didnt work\n";
+  };
+  no_add.setSmooth(true);
 /////////////////////////////////////////////////////////////
 
 // SHAPES
@@ -299,7 +330,7 @@ int main() {
   settings.setPosition({1300, 600}); 
 
 // Confirm event button
-  Button confirm_event("", {100, 100}, 0, sf::Color::Black);
+  Button confirm_event("", {400, 250}, 0, sf::Color::Black);
   confirm_event.setFont(font);
   confirm_event.centerScreen(window);
 
@@ -308,6 +339,16 @@ int main() {
   Button event_add("", {50, 50}, 0, sf::Color::Black);
   event_add.setTexture(plus_event);
   event_add.setPosition({1000, 450});
+
+// confirm event yes
+  Button yes("",{50,50},0,sf::Color::Black);
+  yes.setTexture(yes_add);
+  yes.setPosition({550,250});
+// confirm event no
+  Button no("",{50,50},0,sf::Color::Black);
+  no.setTexture(no_add);
+  no.setPosition({800,250});
+
 
 // Names for the Calendar boxes
   vector<string> days = {"Mon",
@@ -374,6 +415,14 @@ int main() {
   water_output.setOutlineColor(sf::Color::White);
   water_output.setOutlineThickness(1);
 
+// Text of the event the user entered
+  confirm_event_text.setFillColor(sf::Color::Red);
+  confirm_event_text.setFont(font);
+  confirm_event_text.setFillColor(sf::Color::Black);
+  confirm_event_text.setOutlineColor(sf::Color::White);
+  confirm_event_text.setOutlineThickness(1);
+
+
 // Settings text box
   /*  Textbox settings_textbox(100,sf::Color::Red,1);
     settings_textbox.setFont(font);
@@ -387,6 +436,7 @@ int main() {
   bool flash_clear_water = false;
   bool enter_event_bool = false;
   bool confirm_event_bool = false;
+  bool add_event_bool = false;
 
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
@@ -473,12 +523,33 @@ int main() {
     window.draw(text);
     text.setPosition(190, 550);
     text.setFillColor(sf::Color::Blue);
-  }
+  } 
+
+
 
    if(confirm_event_bool){
-    confirm_event.drawTo(window);
+    confirm_event.drawTo(window); 
+    yes.drawTo(window);
+    no.drawTo(window);
+     sf::FloatRect confirm_bounds = confirm_event.getGlobalBounds();
+      sf::FloatRect confirm_text_bounds = confirm_event_text.getGlobalBounds();
+
+      confirm_event_text.setPosition(
+        confirm_bounds.left + (confirm_bounds.width / 2) - (confirm_text_bounds.width / 2),
+        confirm_bounds.top + (confirm_bounds.height / 2) - confirm_text_bounds.height);
+    window.draw(confirm_event_text);
    }
 
+
+
+  if(add_event_bool){
+      cout<<event_count;
+      create_event(event_date,event_time,event_desc,calendar_event);
+      cout<<calendar_event.date<<"\n"<<calendar_event.time<<
+      "\n"<<calendar_event.description<<"\n";
+      calendar.push_back(calendar_event);
+      add_event_bool = false;
+    }
     /*
       if(display_settings_box)
         settings_textbox.drawTo(window);*/
@@ -486,7 +557,7 @@ int main() {
     // Events
     while(window.pollEvent(event)) {
 
-
+  
 
       //// code for textbox // //timer for after an invalid input that prints out a box saying "invalid input"
     if(enter_event_bool) {
@@ -552,8 +623,10 @@ int main() {
 
         else if (event_count == 2){
           if (event.type == sf::Event::TextEntered) {
-            if (std::isprint(event.text.unicode))
-              input_text += event.text.unicode;
+            if (std::isprint(event.text.unicode)){
+              if(input_text.length()<28) // keep the box containing text
+                input_text += event.text.unicode;
+            }
             } 
           else if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::BackSpace) {
@@ -576,10 +649,9 @@ int main() {
       }
       if (event_count == 3){
         confirm_event_bool = true;
-        confirm_event_text.setString(event_date+"\n"+event_time+"\n"+event_desc);
-        event_count = 0;
-       enter_event_bool = false;
-       cout<<event_date<<event_time<<event_desc;
+        event_count=0;
+        confirm_event_text.setString("Add this Event?\n"+
+          event_desc+"\n"+event_date+"\n"+event_time);
      }
     } 
 /////////////////////////////////////////////////////////////////////
@@ -678,6 +750,26 @@ int main() {
 
         }
       }
+// Check if in add event button
+      if(yes.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          /*display_settings_box = true;*/
+          enter_event_bool = false;
+          confirm_event_bool = false;
+          add_event_bool = true;
+          cout << "You are in add button\n";
+
+        }
+      }
+       if(no.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          /*display_settings_box = true;*/
+          cout << "You are in no button\n";
+          enter_event_bool = false;
+          confirm_event_bool = false;
+        }
+      }
+
 
       if (event.type == sf::Event::Closed) // close
         window.close();
