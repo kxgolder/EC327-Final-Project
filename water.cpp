@@ -65,8 +65,7 @@ if(day<0 || day>31)
   return 0;
 if(year<2021 || year>9999)
   return 0;
- cout<< "first\n";
- cout<< month<< " "<< day<<" "<< year<< " \n";
+
 return 1;
 }
 
@@ -173,6 +172,10 @@ int main() {
   string load_water;
   string water_consumed;
   string tmp;
+      string event_date,
+            event_time,
+            event_desc;
+ sf::Text confirm_event_text;
 
   // Load in the state of water
   std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
@@ -293,7 +296,13 @@ int main() {
   Button settings("", {100, 100}, 0, sf::Color::Black);
   settings.setFont(font);
   settings.setTexture(set_texture);
-  settings.setPosition({1300, 600});
+  settings.setPosition({1300, 600}); 
+
+// Confirm event button
+  Button confirm_event("", {100, 100}, 0, sf::Color::Black);
+  confirm_event.setFont(font);
+  confirm_event.centerScreen(window);
+
 
 // Event plus button
   Button event_add("", {50, 50}, 0, sf::Color::Black);
@@ -353,9 +362,9 @@ int main() {
   water_box.setSize(sf::Vector2f(100, 100));
   water_box.setFillColor(sf::Color::Blue);
   water_box.setOutlineThickness(1);
-  water_box.setPosition(900, 200);
+  water_box.setPosition(700, 350);
 
-// Text user inputs in water box
+// Text user inputs in water box 
   sf::String water_input;
   sf::Text water_output;
   water_output.setPosition(1000, 400);
@@ -377,6 +386,7 @@ int main() {
   bool display_settings_box = false;
   bool flash_clear_water = false;
   bool enter_event_bool = false;
+  bool confirm_event_bool = false;
 
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
@@ -391,6 +401,7 @@ int main() {
     }
 //DRAWING SHAPES
 ///////////////////////////////////////////////////
+/*    window.draw(confirm_event);*/
 // background image
     window.draw(background);
     window.draw(water_bar); // need to link this to the water input, cover up watergoal-remaining for a progress bar
@@ -464,7 +475,9 @@ int main() {
     text.setFillColor(sf::Color::Blue);
   }
 
-   
+   if(confirm_event_bool){
+    confirm_event.drawTo(window);
+   }
 
     /*
       if(display_settings_box)
@@ -474,11 +487,8 @@ int main() {
     while(window.pollEvent(event)) {
 
 
-    string event_date,
-            event_time,
-            event_desc;
 
-      //// code for textbox // 
+      //// code for textbox // //timer for after an invalid input that prints out a box saying "invalid input"
     if(enter_event_bool) {
       if(!water_enter) {
         if (event_count == 0){
@@ -565,12 +575,15 @@ int main() {
         }
       }
       if (event_count == 3){
+        confirm_event_bool = true;
+        confirm_event_text.setString(event_date+"\n"+event_time+"\n"+event_desc);
         event_count = 0;
        enter_event_bool = false;
        cout<<event_date<<event_time<<event_desc;
      }
-    }
+    } 
 /////////////////////////////////////////////////////////////////////
+    // escape to close water/ general close everything
       if(water_enter) {
         if(event.type == sf::Event::TextEntered) {
           if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
@@ -609,7 +622,7 @@ int main() {
         sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::FloatRect bounds = water_button.getGlobalBounds();
         if (bounds.contains(mouse)) {
-          cout << "hi\n";
+          cout << "you are in water enter\n";
           display_water_box = true;
           water_enter = true;
         }
@@ -623,7 +636,7 @@ int main() {
           sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
           sf::FloatRect bounds = water_box.getGlobalBounds();
           if (bounds.contains(mouse)) {
-            cout << "hi\n";
+            cout << "you are in water pop up\n";
             display_water_box = false;
             water_enter = false;
 
@@ -643,7 +656,7 @@ int main() {
             update_water("0", total_water, percent_water);
           else
             update_water(water_consumed, total_water, percent_water);
-          cout << "You are here\n";
+          cout << "You are in water clear button\n";
 
         }
       }
@@ -652,7 +665,7 @@ int main() {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           enter_event_bool = true;
           /*display_settings_box = true;*/
-          cout << "You are here\n";
+          cout << "You are in add event\n";
 
         }
       }
@@ -661,7 +674,7 @@ int main() {
       if(settings.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           /*display_settings_box = true;*/
-          cout << "You are here\n";
+          cout << "You are in settings\n";
 
         }
       }

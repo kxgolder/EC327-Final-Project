@@ -16,6 +16,29 @@ public:
 
   }
 
+  void centerOn(Button a){
+    sf::FloatRect a_bounds = a.getGlobalBounds();
+    sf::FloatRect button_bounds = button.getGlobalBounds();
+
+     button.setPosition(
+        a_bounds.left + (a_bounds.width / 2) - (button_bounds.width / 2),
+        a_bounds.top + (a_bounds.height / 2) - button_bounds.height);
+  }
+
+sf::FloatRect getGlobalBounds(){
+    return button.getGlobalBounds();
+}
+
+  void centerScreen(sf::RenderWindow &window){
+    int windowBoundsx = window.getSize().x;
+    int windowBoundsy = window.getSize().y;
+    sf::FloatRect buttonBounds = button.getGlobalBounds();
+
+      button.setPosition(
+        0 + (windowBoundsx / 2) - (buttonBounds.width / 2),
+        0 + (windowBoundsy / 2) - buttonBounds.height);
+  }
+
   void setColor(sf::Color color){
     button.setFillColor(color);
   }
