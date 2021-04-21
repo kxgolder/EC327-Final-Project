@@ -43,13 +43,29 @@ bool check_date(string date){
  int month,
  day,
  year;
- if(date.size()!= 10)
+vector<string> dates;
+
+
+  
+    stringstream split_date(date);
+    
+    while(split_date.good())
+    {
+        string d;
+        getline(split_date,d,'/');
+        dates.push_back(d);
+    }
+
+ month = stoi(dates.at(0));
+ day = stoi(dates.at(1));
+ year = stoi(dates.at(2));
+ if(month<0 || month>12)
   return 0;
-
- month = stoi(date.substr(0,2));
- day = stoi(date.substr(3,2));
- year = stoi(date.substr(7));
-
+if(day<0 || day>31)
+  return 0;
+if(year<2021 || year>9999)
+  return 0;
+ cout<< "first\n";
  cout<< month<< " "<< day<<" "<< year<< " \n";
 return 1;
 }
@@ -72,6 +88,7 @@ bool check_time(string user_time){
     vec.push_back(line);
   }
   // check there is a start and end time
+
   if (vec.size() != 2)
     return 0;
 
@@ -83,6 +100,7 @@ bool check_time(string user_time){
   while(std::getline(ss1,line,':')) {
     vec_first.push_back(line);
   }
+
   // make sure there is an hour and min input
   if (vec_first.size() != 2)
     return 0;
@@ -456,13 +474,17 @@ int main() {
     while(window.pollEvent(event)) {
 
 
- 
+    string event_date,
+            event_time,
+            event_desc;
+
       //// code for textbox // 
     if(enter_event_bool) {
       if(!water_enter) {
         if (event_count == 0){
           if (event.type == sf::Event::TextEntered) {
-            if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 32)
+            if (event.text.unicode >= 47 & event.text.unicode < 58 |
+             event.text.unicode == 32)
               input_text += event.text.unicode;
             } 
           else if (event.type == sf::Event::KeyPressed) {
@@ -472,6 +494,7 @@ int main() {
            }
           else if (event.key.code == sf::Keyboard::Return) {
             if(check_date(input_text)){
+              event_date = input_text;
               event_count = event_count +1;
               cout << input_text << "\n";
               input_text.clear();
@@ -490,8 +513,8 @@ int main() {
         else if (event_count == 1){
           if (event.type == sf::Event::TextEntered) {
             if (event.text.unicode > 47 & event.text.unicode < 58 |
-              event.text.unicode == 97 | event.text.unicode == 109 |
-               event.text.unicode == 112)
+              event.text.unicode == 58 |
+              event.text.unicode == 45 )
               input_text += event.text.unicode;
             } 
           else if (event.type == sf::Event::KeyPressed) {
@@ -501,6 +524,7 @@ int main() {
            }
           else if (event.key.code == sf::Keyboard::Return) {
             if(check_time(input_text)){
+              event_time = input_text;
               event_count = event_count +1;
               cout << input_text << "\n";
               input_text.clear();
@@ -527,6 +551,7 @@ int main() {
                 input_text.pop_back();
            }
           else if (event.key.code == sf::Keyboard::Return) {
+              event_desc = input_text;
               event_count = event_count +1;
               cout << input_text << "\n";
               input_text.clear();  
@@ -542,6 +567,7 @@ int main() {
       if (event_count == 3){
         event_count = 0;
        enter_event_bool = false;
+       cout<<event_date<<event_time<<event_desc;
      }
     }
 /////////////////////////////////////////////////////////////////////
