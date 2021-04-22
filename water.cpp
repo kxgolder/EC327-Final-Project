@@ -23,11 +23,12 @@ const int app_width = 1400;
 const int app_length = 700;
 const int calendar_spaces = 8;
 const int calendar_days = 7;
-const float rec_x = (float)350 / calendar_spaces;
-const int rec_y = 40;
-const int rec_width = 150;
-const int rec_length = 300;
-const int water_bar_length = app_width - 2 * rec_x - 80;
+const int rec_x = 20;
+const int rec_y = 20;
+const int rec_width = 185;
+const int rec_length = 400;
+const int space_btwn_rec = 10;
+const int water_bar_length = 6*rec_width + 6*space_btwn_rec;
 
 const int watergoal = 16;
 
@@ -289,9 +290,9 @@ int main() {
 
 
 // Water input button
-  sf::CircleShape water_button(40);
+  sf::CircleShape water_button(35);
   water_button.setTexture(&button_texture);
-  water_button.setPosition(app_width - rec_x * 2 - 20, rec_length + rec_y + 30);
+  water_button.setPosition(1210, 450);
 
 
 // For the calendar shapes
@@ -303,8 +304,8 @@ int main() {
   rectangle.setTexture(&wood_background);
 
 // First day to copy
-  int day_x = rec_x + 50;
-  int day_y = 50;
+  int day_x = rec_x + 60;
+  int day_y = 30;
   sf::Text Sun;
   sf::Font font;
   font.loadFromFile("/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf");
@@ -317,11 +318,11 @@ int main() {
 
 
 // Button to clear the current water count
-  Button clear_button("Clear Water", { 100, 100 }, 15, sf::Color::Black);
+  Button clear_button("Clear Water", { 90,70 }, 15, sf::Color::Black);
   clear_button.setFont(font);
   clear_button.setTexture(clear_button_t);
   clear_button.setFillColor(sf::Color::Green);
-  clear_button.setPosition({app_width - rec_x * 2 - 20, rec_length + rec_y + 110 });
+  clear_button.setPosition({1290, 460});
 
 // Setting button
   Button settings("", {100, 100}, 0, sf::Color::Black);
@@ -338,7 +339,7 @@ int main() {
 // Event plus button
   Button event_add("", {50, 50}, 0, sf::Color::Black);
   event_add.setTexture(plus_event);
-  event_add.setPosition({1000, 450});
+  event_add.setPosition({90, 600});
 
 // confirm event yes
   Button yes("",{50,50},0,sf::Color::Black);
@@ -356,41 +357,47 @@ int main() {
                         };
   vector<sf::Text> day;
 
-  int x = day_x + 50; // spacing on these needs to be calculated
+  int x = day_x + 60; 
   for (int i = 0; i < days.size(); i++) {
     day.push_back(Sun);
-    day.at(i).setPosition(150 + x, day_y);
+    day.at(i).setPosition(120 + x, day_y);
     day.at(i).setString(days.at(i));
     x = x + rec_x + rec_width;
   }
 
 //Creating the Day Boxes
-  float a = rec_width + (float)350 / calendar_spaces;
+  float a = rec_width + space_btwn_rec;
   for (int i = 0; i < 6; i++) {
     rect_vec.push_back(rectangle);
     rect_vec.at(i).setPosition(rec_x + a, rec_y);
-    a = a + rec_width + (float)350 / calendar_spaces;
+    a = a + rec_width + 10;
   }
 
 // create directions to add event
   sf::Text add_event;
   add_event.setFont(font);
-  add_event.setString("Add Event: Enter Day, Time with minutes in 24-hour time, and Event in the Textbox below, separated by commas");
+  add_event.setString("Add Event: Enter Day, Time with minutes in 24-hour time, and Event in the Textbox below, separated by RETURN key");
   add_event.setCharacterSize(20);
   add_event.setFillColor(sf::Color::Black);
-  add_event.setPosition(60, 470);
+  add_event.setPosition(60, 550);
   sf::Text add_info;
   add_info.setFont(font);
   add_info.setString("Example: 12/23/2021, 12:00 - 14:30, Tennis Practice");
   add_info.setCharacterSize(20);
   add_info.setFillColor(sf::Color::Black);
-  add_info.setPosition(180, 510);
+  add_info.setPosition(180,600);
 
 // add line under user input
   sf::RectangleShape line(sf::Vector2f(800, 2));
   line.setOutlineColor(sf::Color::Black);
   line.setFillColor(sf::Color::Black);
-  line.setPosition(180, 590);
+  line.setPosition(180, 670);
+
+  // add line under water rectangle
+  sf::RectangleShape line_water(sf::Vector2f(1170, 2));
+  line_water.setOutlineColor(sf::Color::Blue);
+  line_water.setFillColor(sf::Color::Blue);
+  line_water.setPosition(20, 510);
 
 
 // add textbox
@@ -472,6 +479,7 @@ int main() {
 
 // water button
     window.draw(water_button);
+    window.draw(line_water);
 
 // add event button
     event_add.drawTo(window);
@@ -481,9 +489,6 @@ int main() {
     window.draw(add_info);
     window.draw(line);
 
-    window.draw(add_event);
-    window.draw(add_info);
-    window.draw(line);
 
     // Dispaly Water input background box
     if(display_water_box) {
@@ -521,7 +526,7 @@ int main() {
     }
     text.setString(input_text + (show_cursor ? '_' : ' '));
     window.draw(text);
-    text.setPosition(190, 550);
+    text.setPosition(190, 630);
     text.setFillColor(sf::Color::Blue);
   } 
 
