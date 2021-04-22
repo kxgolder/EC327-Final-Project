@@ -8,10 +8,8 @@
 #include <fstream>
 #include <locale>
 #include "Button.h"
-#include "Textbox.h"
 #include <sstream>
 #include <iomanip>
-#include <algorithm>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #define SECONDS_IN_DAY 86400;
 using std::cin;
@@ -39,22 +37,23 @@ const int water_bar_length = app_width - 2 * rec_x - 80;
 
 const int watergoal = 16;
 
+// Seven day period for checking valid displayable events
+class day_period_7 : public time_period {
+ public:
+  day_period_7(date d) : time_period(ptime(d),
+                                       ptime(d, hours(24 * 7)))
+  {}
 
-  class day_period : public time_period
-  {
-  public:
-    day_period(date d) : time_period(ptime(d),//midnight
-                                     ptime(d,hours(24)))
-    {}
-
-  };
+};
 
 class Event {
  public:
-  string day,
-  time,
-  description;
-  float button_spacing;
+  string date,
+         time,
+         description;
+
+  boost::gregorian::date d; // for checking if the event is in the current 7 day period
+ float button_spacing;
   float buttonx;
   float buttony;
 // placeholder, difference between time/24
@@ -62,121 +61,121 @@ class Event {
 
 };
 
-void create_event(string event_day, string event_time, string event_desc, Event& a){
+void create_event(string event_date, string event_time, string event_desc, Event& a) {
 // store the user inputs into the event
-a.day = event_day;
-a.time = event_time;
-a.description = event_desc;
+  a.date = event_date;
+  a.time = event_time;
+  a.description = event_desc;
 
 // standard width of each calendar event
-a.buttonx = 150;
+  a.buttonx = 150;
 
-// Calculating the relative length of the calendar event 
-vector<string> times;
+// Calculating the relative length of the calendar event
+  vector<string> dates;
 
-stringstream split_time(event_time);
-    
-while(split_time.good())
-{
-  string d;
-  getline(split_time,d,'-');
-  times.push_back(d);
-}
+  stringstream split_date(event_date);
 
-for (auto e:times)
-  cout<<e<<"\n";
-
-int first_hour,
-    second_hour,
-    first_min,
-    second_min;
-
-first_hour = stoi(times.at(0).substr(0,times.at(0).find(":")));
-second_hour = stoi(times.at(1).substr(0,times.at(1).find(":")));
-first_min = stoi(times.at(0).substr(times.at(0).find(":")+1,2));
-second_min = stoi(times.at(1).substr(times.at(1).find(":")+1,2));
-
-
-int first_time_as_seconds = first_hour*3600+first_min*60;
-int second_time_as_seconds = second_hour*3600+second_min*60;
-
-int time_dif = second_time_as_seconds-first_time_as_seconds;
-
-a.buttony = 250*(float)time_dif/SECONDS_IN_DAY;
-
-
-a.button_spacing = 250*(float)first_time_as_seconds/SECONDS_IN_DAY// needs to be a percentage of the final calendar box
-// creating the button for the calendar event
-Button b(event_desc,{a.buttonx,a.buttony},15,sf::Color::Black);
-a.b = b;
-
- //// needs to be caluclated
-
-
-}
-
-bool check_day(string &day){
-  vector<string> correct_dates({{"Sunday"},{"Monday"},{"Tuesday"},{"Wednesday"},{"Thursday"},
-    {"Friday"},{"Saturday"}/*,{"sunday"},{"monday"},{"tuesday"},
-    {"wednesday"},{"thursday"},{"friday"},{"saturday"}*/});
-  /*transform(day.begin(), day.end(), day.begin(), ::tolower);*/
-  day.at(0) = toupper(day.at(0));
-  int count = 0;
-  for (auto e:correct_dates){
-    if (day == e)
-      count = count +1;
+  while(split_date.good()) {
+    string d;
+    getline(split_date, d, '/');
+    dates.push_back(d);
   }
-  if (count == 1)
-    return 1;
-  else
-    return 0;
+
+  string usable_date = dates.at(2) + "-" + dates.at(0) + "-" + dates.at(1);
+  date d(from_simple_string(usable_date));
+  a.d = d; // gets the date in the correct format for checking against the current time period
+
+
+  vector<string> times;
+
+  stringstream split_time(event_time);
+
+  while(split_time.good()) {
+    string d;
+    getline(split_time, d, '-');
+    times.push_back(d);
+  }
+
+  int first_hour,
+      second_hour,
+      first_min,
+      second_min;
+
+
+  first_hour = stoi(times.at(0).substr(0, times.at(0).find(":")));
+  second_hour = stoi(times.at(1).substr(0, times.at(1).find(":")));
+  first_min = stoi(times.at(0).substr(times.at(0).find(":") + 1, 2));
+  second_min = stoi(times.at(1).substr(times.at(1).find(":") + 1, 2));
+
+
+  int first_time_as_seconds = first_hour * 3600 + first_min * 60;
+  int second_time_as_seconds = second_hour * 3600 + second_min * 60;
+
+  int time_dif = second_time_as_seconds - first_time_as_seconds;
+
+  a.buttony = 250 * (float)time_dif / SECONDS_IN_DAY;
+
+  a.button_spacing = 250*(float)first_time_as_seconds/SECONDS_IN_DAY// needs to be a percentage of the final calendar box
+
+// creating the button for the calendar event
+  Button b(event_desc, {a.buttonx, a.buttony}, 15, sf::Color::Black);
+  a.b = b;
+//// needs to be caluclated
+
+
+
+
 }
 
-/*bool check_date(string date){
- int month,
- day,
- year;
-vector<string> dates;
+bool check_date(string date) {
+  int month,
+      day,
+      year;
+  vector<string> dates;
+  bool leapyear;
 
 
-  
-    stringstream split_date(date);
-    
-    while(split_date.good())
-    {
-        string d;
-        getline(split_date,d,'/');
-        dates.push_back(d);
-    }
 
- month = stoi(dates.at(0));
- day = stoi(dates.at(1));
- year = stoi(dates.at(2));
- if(month<0 || month>12)
-  return 0;
-if(day<0 || day>31)
-  return 0;
-if(year<2021 || year>9999)
-  return 0;
+  stringstream split_date(date);
 
-return 1;
-}*/
+  while(split_date.good()) {
+    string d;
+    getline(split_date, d, '/');
+    dates.push_back(d);
+  }
+
+  month = stoi(dates.at(0));
+  day = stoi(dates.at(1));
+  year = stoi(dates.at(2));
+  if(month < 0 || month > 12)
+    return 0;
+  if(day < 0 || day > 31)
+    return 0;
+  if(year < 2021 || year > 9999)
+    return 0;
+
+  leapyear = gregorian_calendar::is_leap_year(year);
+
+  if(!leapyear & month == 2 & day > 28) // could have a thing that says leap year
+    return 0;
+
+  return 1;
+}
 
 // function to remoove spaces
-string removeSpaces(string str) 
-{
-    str.erase(remove(str.begin(), str.end(), ' '), str.end());
-    return str;
+string removeSpaces(string str) {
+  str.erase(remove(str.begin(), str.end(), ' '), str.end());
+  return str;
 }
 
 
 //function to check time input
-bool check_time(string user_time){
+bool check_time(string user_time) {
   vector<string> vec, vec_first, vec_second;
   stringstream ss(user_time);
   string line;
   // split string at '-'
-  while(std::getline(ss,line,'-')) {
+  while(std::getline(ss, line, '-')) {
     vec.push_back(line);
   }
   // check there is a start and end time
@@ -189,7 +188,7 @@ bool check_time(string user_time){
   string second = removeSpaces(vec.at(1));
   stringstream ss1(first);
   // split start time into hour and min
-  while(std::getline(ss1,line,':')) {
+  while(std::getline(ss1, line, ':')) {
     vec_first.push_back(line);
   }
 
@@ -206,7 +205,7 @@ bool check_time(string user_time){
 
   // do the same thing to end time
   stringstream ss2(second);
-  while(std::getline(ss2,line,':')) {
+  while(std::getline(ss2, line, ':')) {
     vec_second.push_back(line);
   }
   if (vec_second.size() != 2)
@@ -217,8 +216,8 @@ bool check_time(string user_time){
     return 0;
   if (second_min < 0 || second_min > 59)
     return 0;
- 
- // check that the start time is before end time
+
+// check that the start time is before end time
   if (first_hour > second_hour)
     return 0;
 
@@ -248,15 +247,40 @@ void update_water(string w, float& u, float& j) {
     u = u + added_water;
     j = u / watergoal;
   }
-  std::ofstream water_state("water_state.txt");
+  std::ofstream water_state("water_state.txt"); // update the water save file
   water_state << u;
   water_state.close();
 }
 
+// Check if the event is in a displayable time period
+bool check_in_period(boost::gregorian::date local_time, date d) {
+  day_period_7 dp(local_time);
+  ptime t(d); 
+  if (dp.contains(t)) {
+    return 1;
+  }
+  return 0;
+}
 
-
-
-
+bool check_in_period_by_day(boost::gregorian::date local_time, date d, int i){
+  ptime t(local_time);
+  ptime x(local_time,hours(24)*(i+1));
+  time_period g(t,x);
+  ptime work(d);
+  if (g.contains(work)) {
+    return 1;
+  }
+  return 0;
+}
+vector<string> set_calendar_date(boost::gregorian::date local_time){
+    vector<string> times;
+    for (int i = 0;i<8;i++){
+     ptime t(local_time, hours(24)*(i+1));
+     string s = to_simple_string(t);
+     times.push_back(s.substr(5,3)+" "+to_string(stoi(s.substr(9))));
+  }
+  return times;
+}
 int main() {
   int event_count = 0;
   float total_water = (float)0;
@@ -265,18 +289,24 @@ int main() {
   string load_water;
   string water_consumed;
   string tmp;
-      string event_day,
-            event_time,
-            event_desc;
- sf::Text confirm_event_text;
- Event calendar_event;
- vector<Event> calendar;
+  string event_date,
+         event_time,
+         event_desc;
+  sf::Text confirm_event_text;
+  Event calendar_event;
+  vector<Event> calendar;
+
+
+  date local_time(day_clock::local_day()); //get local time to set calendar date
+
+// read in the files here and check which are in period
+
 
   // Load in the state of water
   std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
   if (water_in.is_open()) {
     while ( getline (water_in, load_water) ) {
- /*     cout << load_water;*/
+      /*      cout << load_water;*/
     }
     water_in.close();
     if (load_water.size() > 0)
@@ -291,8 +321,10 @@ int main() {
 
   sf::RenderWindow window(sf::VideoMode(app_width, app_length), "Calendar");
 
-// TEXTURES
+// TEXTURES & FONTS
 ///////////////////////////////////////////////////////////////
+  sf::Font font;
+  font.loadFromFile("/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf");
 
   sf::Texture wood_background; // Background for weekdays
   if (!wood_background.loadFromFile("wood.jpg")) {
@@ -378,19 +410,6 @@ int main() {
   rectangle.setPosition(rec_x, rec_y);
   rectangle.setTexture(&wood_background);
 
-// First day to copy
-  int day_x = rec_x + 50;
-  int day_y = 50;
-  sf::Text Sun;
-  sf::Font font;
-  font.loadFromFile("/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf");
-  Sun.setFont(font);
-  Sun.setString("Sun");
-  Sun.setFillColor(sf::Color::Black);
-  Sun.setOutlineColor(sf::Color::White);
-  Sun.setOutlineThickness(1);
-  Sun.setPosition(day_x, day_y);
-
 
 // Button to clear the current water count
   Button clear_button("Clear Water", { 100, 100 }, 15, sf::Color::Black);
@@ -403,7 +422,7 @@ int main() {
   Button settings("", {100, 100}, 0, sf::Color::Black);
   settings.setFont(font);
   settings.setTexture(set_texture);
-  settings.setPosition({1300, 600}); 
+  settings.setPosition({1300, 600});
 
 // Confirm event button
   Button confirm_event("", {400, 250}, 0, sf::Color::Black);
@@ -417,35 +436,43 @@ int main() {
   event_add.setPosition({1000, 450});
 
 // confirm event yes
-  Button yes("",{50,50},0,sf::Color::Black);
+  Button yes("", {50, 50}, 0, sf::Color::Black);
   yes.setTexture(yes_add);
-  yes.setPosition({550,250});
+  yes.setPosition({550, 250});
 // confirm event no
-  Button no("",{50,50},0,sf::Color::Black);
+  Button no("", {50, 50}, 0, sf::Color::Black);
   no.setTexture(no_add);
-  no.setPosition({800,250});
+  no.setPosition({800, 250});
 
 
 // Names for the Calendar boxes
-  vector<string> days = {"Mon",
-                         "Tue", "Wed", "Thu", "Fri", "Sat"
-                        };
+  vector<string> days = set_calendar_date(local_time);
   vector<sf::Text> day;
+// First day to copy
+  int day_x = rec_x + 50;
+  int day_y = 50;
+  sf::Text day_text;
+  day_text.setFont(font);
+  day_text.setString(days.at(0));
+  day_text.setFillColor(sf::Color::Black);
+  day_text.setOutlineColor(sf::Color::White);
+  day_text.setOutlineThickness(1);
+  day_text.setPosition(day_x, day_y);
 
   int x = day_x + 50; // spacing on these needs to be calculated
   for (int i = 0; i < days.size(); i++) {
-    day.push_back(Sun);
+    day.push_back(day_text);
     day.at(i).setPosition(150 + x, day_y);
     day.at(i).setString(days.at(i));
     x = x + rec_x + rec_width;
   }
 
 //Creating the Day Boxes
-  float a = rec_width + rec_x;
+  float a = rec_width + (float)350 / calendar_spaces;
   for (int i = 0; i < 6; i++) {
     rect_vec.push_back(rectangle);
     rect_vec.at(i).setPosition(rec_x + a, rec_y);
-    a = a + rec_width + rec_x;
+    a = a + rec_width + (float)350 / calendar_spaces;
   }
 
 // create directions to add event
@@ -457,7 +484,7 @@ int main() {
   add_event.setPosition(60, 470);
   sf::Text add_info;
   add_info.setFont(font);
-  add_info.setString("Example: Sunday, 12:00 - 14:30, Tennis Practice");
+  add_info.setString("Example: 12/23/2021, 12:00 - 14:30, Tennis Practice");
   add_info.setCharacterSize(20);
   add_info.setFillColor(sf::Color::Black);
   add_info.setPosition(180, 510);
@@ -481,7 +508,7 @@ int main() {
   water_box.setOutlineThickness(1);
   water_box.setPosition(700, 350);
 
-// Text user inputs in water box 
+// Text user inputs in water box
   sf::String water_input;
   sf::Text water_output;
   water_output.setPosition(1000, 400);
@@ -527,7 +554,7 @@ int main() {
     }
 //DRAWING SHAPES
 ///////////////////////////////////////////////////
-/*    window.draw(confirm_event);*/
+    /*    window.draw(confirm_event);*/
 // background image
     window.draw(background);
     window.draw(water_bar); // need to link this to the water input, cover up watergoal-remaining for a progress bar
@@ -538,7 +565,7 @@ int main() {
       window.draw(rect_vec.at(i));
 
 // Draw the names
-    window.draw(Sun);
+    window.draw(day_text);
     for (int i = 0; i < day.size(); i++)
       window.draw(day.at(i));
 
@@ -590,55 +617,58 @@ int main() {
 
     text_effect_time += clock.restart();
 
-   if(enter_event_bool) {
-    if (text_effect_time >= sf::seconds(0.5f)) {
-      show_cursor = !show_cursor;
-      text_effect_time = sf::Time::Zero;
+    if(enter_event_bool) {
+      if (text_effect_time >= sf::seconds(0.5f)) {
+        show_cursor = !show_cursor;
+        text_effect_time = sf::Time::Zero;
+      }
+      text.setString(input_text + (show_cursor ? '_' : ' '));
+      window.draw(text);
+      text.setPosition(190, 550);
+      text.setFillColor(sf::Color::Blue);
     }
-    text.setString(input_text + (show_cursor ? '_' : ' '));
-    window.draw(text);
-    text.setPosition(190, 550);
-    text.setFillColor(sf::Color::Blue);
-  } 
 
 
 
-   if(confirm_event_bool){
-    confirm_event.drawTo(window); 
-    yes.drawTo(window);
-    no.drawTo(window);
-     sf::FloatRect confirm_bounds = confirm_event.getGlobalBounds();
+    if(confirm_event_bool) {
+      confirm_event.drawTo(window);
+      yes.drawTo(window);
+      no.drawTo(window);
+      sf::FloatRect confirm_bounds = confirm_event.getGlobalBounds();
       sf::FloatRect confirm_text_bounds = confirm_event_text.getGlobalBounds();
 
       confirm_event_text.setPosition(
         confirm_bounds.left + (confirm_bounds.width / 2) - (confirm_text_bounds.width / 2),
         confirm_bounds.top + (confirm_bounds.height / 2) - confirm_text_bounds.height);
-    window.draw(confirm_event_text);
-   }
+      window.draw(confirm_event_text);
+    }
 
 
-// add the event to the calendar, place it on the display
-  if(add_event_bool){
-/*      cout<<event_count;*/
-      create_event(event_day,event_time,event_desc,calendar_event);
+
+    if(add_event_bool) {
+      /*      cout<<event_count;*/
+      create_event(event_date, event_time, event_desc, calendar_event);
       calendar_event.b.setFont(font);
       calendar_event.b.setTextFill(sf::Color::Black);
-      if(calendar_event.day == "Sunday")
+      if(check_in_period(local_time, calendar_event.d)){
+
+       if(check_in_period_by_day(local_time,calendar_event.d,0))
         calendar_event.b.setPosition({rec_x,80+calendar_event.button_spacing});
-      else if(calendar_event.day == "Monday")
+      else if(check_in_period_by_day(local_time,calendar_event.d,1))
         calendar_event.b.setPosition({2*(rec_x) + rec_width,80+calendar_event.button_spacing});
-      else if(calendar_event.day == "Tuesday")
+      else if(check_in_period_by_day(local_time,calendar_event.d,2))
         calendar_event.b.setPosition({3*(rec_x) + 2*rec_width,80+calendar_event.button_spacing});
-      else if(calendar_event.day == "Wednesday")
+      else if(check_in_period_by_day(local_time,calendar_event.d,3))
         calendar_event.b.setPosition({4*(rec_x) + 3*rec_width,80+calendar_event.button_spacing});
-      else if(calendar_event.day == "Thursday")
+      else if(check_in_period_by_day(local_time,calendar_event.d,4))
         calendar_event.b.setPosition({5*(rec_x) + 4*rec_width,80+calendar_event.button_spacing});
-      else if(calendar_event.day == "Friday")
+      else if(check_in_period_by_day(local_time,calendar_event.d,5))
         calendar_event.b.setPosition({6*(rec_x) + 5*rec_width,80+calendar_event.button_spacing});
       else
         calendar_event.b.setPosition({7*(rec_x) + 6*rec_width,80+calendar_event.button_spacing});
-/*      cout<<calendar_event.date<<"\n"<<calendar_event.time<<
-      "\n"<<calendar_event.description<<"\n";*/
+
+      } // need to check if event is already taken up time wise here
+    
       calendar.push_back(calendar_event);
       add_event_bool = false;
     }
@@ -652,105 +682,96 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
     // Events
     while(window.pollEvent(event)) {
 
-  
+
 
       //// code for textbox // //timer for after an invalid input that prints out a box saying "invalid input"
-    if(enter_event_bool) {
-      if(!water_enter) {
-        if (event_count == 0){
-          if (event.type == sf::Event::TextEntered) {
-            if (event.text.unicode >= 65 & event.text.unicode < 91 |
-             event.text.unicode >= 97 & event.text.unicode<123)
-              input_text += event.text.unicode;
-            } 
-          else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::BackSpace) {
-              if (!input_text.empty())
-                input_text.pop_back();
-           }
-          else if (event.key.code == sf::Keyboard::Return) {
-            if(check_day(input_text)){
-              event_day = input_text;
-              event_count = event_count +1;
-              cout << input_text << "\n";
-              input_text.clear();
-            } 
-            else 
-              input_text.clear();   
-          }
-           else if (event.key.code == sf::Keyboard::Escape){
-            input_text.clear();
-            enter_event_bool = false;
-            event_count = 0;
-          }
-          }
-        }
-
-        else if (event_count == 1){
-          if (event.type == sf::Event::TextEntered) {
-            if (event.text.unicode > 47 & event.text.unicode < 58 |
-              event.text.unicode == 58 |
-              event.text.unicode == 45 )
-              input_text += event.text.unicode;
-            } 
-          else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::BackSpace) {
-              if (!input_text.empty())
-                input_text.pop_back();
-           }
-          else if (event.key.code == sf::Keyboard::Return) {
-            if(check_time(input_text)){
-              event_time = input_text;
-              event_count = event_count +1;
-              cout << input_text << "\n";
-              input_text.clear();
-            } 
-            else 
-              input_text.clear();   
-          }
-          else if (event.key.code == sf::Keyboard::Escape){
-            input_text.clear();
-            enter_event_bool = false;
-            event_count = 0;
-          }
-          }
-        }
-
-        else if (event_count == 2){
-          if (event.type == sf::Event::TextEntered) {
-            if (std::isprint(event.text.unicode)){
-              if(input_text.length()<18) // keep the box containing text
+      if(enter_event_bool) {
+        if(!water_enter) {
+          if (event_count == 0) {
+            if (event.type == sf::Event::TextEntered) {
+              if (event.text.unicode >= 47 & event.text.unicode < 58 |
+                  event.text.unicode == 32)
+                if(input_text.size()<10)
                 input_text += event.text.unicode;
+            } else if (event.type == sf::Event::KeyPressed) {
+              if (event.key.code == sf::Keyboard::BackSpace) {
+                if (!input_text.empty())
+                  input_text.pop_back();
+              } else if (event.key.code == sf::Keyboard::Return) {
+                if(check_date(input_text)) {
+                  event_date = input_text;
+                  event_count = event_count + 1;
+                  cout << input_text << "\n";
+                  input_text.clear();
+                } else
+                  input_text.clear();
+              } else if (event.key.code == sf::Keyboard::Escape) {
+                input_text.clear();
+                enter_event_bool = false;
+                event_count = 0;
+              }
             }
-            } 
-          else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::BackSpace) {
-              if (!input_text.empty())
-                input_text.pop_back();
-           }
-          else if (event.key.code == sf::Keyboard::Return) {
-              event_desc = input_text;
-              event_count = event_count +1;
-              cout << input_text << "\n";
-              input_text.clear();  
           }
-           else if (event.key.code == sf::Keyboard::Escape){
-            input_text.clear();
-            enter_event_bool = false;
-            event_count = 0;
+
+          else if (event_count == 1) {
+            if (event.type == sf::Event::TextEntered) {
+              if (event.text.unicode > 47 & event.text.unicode < 58 |
+                  event.text.unicode == 58 |
+                  event.text.unicode == 45 )
+                if(input_text.size()<11)
+                input_text += event.text.unicode;
+            } else if (event.type == sf::Event::KeyPressed) {
+              if (event.key.code == sf::Keyboard::BackSpace) {
+                if (!input_text.empty())
+                  input_text.pop_back();
+              } else if (event.key.code == sf::Keyboard::Return) {
+                if(check_time(input_text)) {
+                  event_time = input_text;
+                  event_count = event_count + 1;
+                  cout << input_text << "\n";
+                  input_text.clear();
+                } else
+                  input_text.clear();
+              } else if (event.key.code == sf::Keyboard::Escape) {
+                input_text.clear();
+                enter_event_bool = false;
+                event_count = 0;
+              }
+            }
           }
+
+          else if (event_count == 2) {
+            if (event.type == sf::Event::TextEntered) {
+              if (std::isprint(event.text.unicode)) {
+                if(input_text.length() < 28) // keep the box containing text
+                  input_text += event.text.unicode;
+              }
+            } else if (event.type == sf::Event::KeyPressed) {
+              if (event.key.code == sf::Keyboard::BackSpace) {
+                if (!input_text.empty())
+                  input_text.pop_back();
+              } else if (event.key.code == sf::Keyboard::Return) {
+                event_desc = input_text;
+                event_count = event_count + 1;
+                cout << input_text << "\n";
+                input_text.clear();
+              } else if (event.key.code == sf::Keyboard::Escape) {
+                input_text.clear();
+                enter_event_bool = false;
+                event_count = 0;
+              }
+            }
           }
+        }
+        if (event_count == 3) {
+          confirm_event_bool = true;
+          event_count = 0;
+          confirm_event_text.setString("Add this Event?\n" +
+                                       event_desc + "\n" + event_date + "\n" + event_time);
         }
       }
-      if (event_count == 3){
-        confirm_event_bool = true;
-        event_count=0;
-        confirm_event_text.setString("Add this Event?\n"+
-          event_desc+"\n"+event_day+"\n"+event_time);
-     }
-    } 
 /////////////////////////////////////////////////////////////////////
-    // escape to close water/ general close everything
+      // escape to close water/ general close everything
       if(water_enter) {
         if(event.type == sf::Event::TextEntered) {
           if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
@@ -832,7 +853,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           enter_event_bool = true;
           /*display_settings_box = true;*/
-         /* cout <<"You are in add event\n";*/
+          /* cout <<"You are in add event\n";*/
 
         }
       }
@@ -856,7 +877,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
 
         }
       }
-       if(no.isMouseOver(window)) {
+      if(no.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           /*display_settings_box = true;*/
           cout << "You are in no button\n";
