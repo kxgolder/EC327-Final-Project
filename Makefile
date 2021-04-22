@@ -10,3 +10,7 @@ water: water.cpp
 
 other: other.cpp
 	g++ other.cpp -o o -lsfml-graphics -lsfml-window -lsfml-system
+
+another_other: another_other.cpp
+	g++ another_other.cpp -o a -lsfml-graphics -lsfml-window -lsfml-system
+

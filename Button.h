@@ -46,6 +46,10 @@ sf::FloatRect getGlobalBounds(){
     text.setFont(font);
   }
 
+  void setTextFill(sf::Color color){
+    text.setFillColor(color);
+  }
+
   void setTexture(sf::Texture &texture){
     button.setTexture(&texture);
   }
