@@ -15,6 +15,9 @@ another_other: another_other.cpp
 	g++ another_other.cpp -o a -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
 
 
+working_dates: working_dates.cpp
+	g++ working_dates.cpp -o w -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
+
 
 timetry: timetry.cpp
 	g++ timetry.cpp -o t -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
