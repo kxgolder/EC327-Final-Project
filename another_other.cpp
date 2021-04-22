@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-#include "boost/date_time/posix_time/posix_time.hpp"
+/*#include "boost/date_time/posix_time/posix_time.hpp"*/
 #define SECONDS_IN_DAY 86400;
 using std::cin;
 using std::cout;
@@ -40,7 +40,7 @@ const int water_bar_length = app_width - 2 * rec_x - 80;
 const int watergoal = 16;
 
 
-  class day_period : public time_period
+/*  class day_period : public time_period
   {
   public:
     day_period(date d) : time_period(ptime(d),//midnight
@@ -48,7 +48,7 @@ const int watergoal = 16;
     {}
 
   };
-
+*/
 class Event {
  public:
   string day,
