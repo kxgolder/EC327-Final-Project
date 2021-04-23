@@ -17,6 +17,8 @@ using std::string;
 using std::stoi;
 using std::vector;
 using std::stringstream;
+using std::stof;
+using std::ifstream;
 
 const int event_parts = 3;
 const int app_width = 1400;
@@ -178,7 +180,40 @@ void update_water(string w, float& u, float& j) {
   water_state.close();
 }
 
+bool watercheck(){
+  float hours[] = {12,15,18,21};
+  float minimumwater[] = {2,4,6,8};
+  float h,g;
+  string line;
+  vector<string> stringwater;
 
+  // std::time_t time = std::time(NULL);            
+  // std::tm now = *std::localtime(&time);
+  // h = now.tm_hour;
+
+  ifstream myfile ("water_state.txt");
+  if (myfile.is_open())
+  {
+    while(getline (myfile,line))
+    {
+      stringwater.push_back(line);
+    }
+    myfile.close();
+  }
+
+  g = stof(stringwater.at(0));
+
+  int i =0;
+  for (auto test : hours){
+    if (h > test)
+      i++;
+  }
+  if (g < minimumwater[i])
+    cout << "drink more water!\n";
+  
+  return 0;
+
+}
 
 
 
@@ -783,6 +818,7 @@ int main() {
 
     window.display();
   }
+
   return 0;
 }
 
