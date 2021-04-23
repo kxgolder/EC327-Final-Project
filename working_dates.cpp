@@ -382,11 +382,11 @@ int main() {
   };
   no_add.setSmooth(true);
 
-  sf::Texture new_plus;
-  if (!new_plus.loadFromFile("Pluspink.png")) {
+  sf::Texture reset;
+  if (!reset.loadFromFile("reset-button.png")) {
     cout << "didnt work\n";
   };
-  new_plus.setSmooth(true);
+  reset.setSmooth(true);
   
 /////////////////////////////////////////////////////////////
 
@@ -428,13 +428,13 @@ int main() {
 
 
 // Button to clear the current water count
-  Button clear_button("Clear Water", { 100, 100 }, 15, sf::Color::Black);
+  Button clear_button("", { 80, 30 }, 15, sf::Color::Black);
   clear_button.setFont(font);
-  clear_button.setTexture(clear_button_t);
-  clear_button.setFillColor(sf::Color::Green);
-  clear_button.setPosition({app_width - rec_x * 2 - 20, rec_length + rec_y + 110 });
+  clear_button.setTexture(reset);
+  clear_button.setFillColor(sf::Color::White);
+  clear_button.setPosition({app_width - rec_x * 2 - 20, rec_length + rec_y + 120 });
 
-// Setting button
+// Setting buttons
   Button settings("", {100, 100}, 0, sf::Color::Black);
   settings.setFont(font);
   settings.setTexture(set_texture);
@@ -538,7 +538,7 @@ int main() {
   water_box.setSize(sf::Vector2f(100, 100));
   water_box.setFillColor(sf::Color::Blue);
   water_box.setOutlineThickness(1);
-  water_box.setPosition(700, 350);
+  water_box.setPosition(650, 400);
 
 // Text user inputs in water box
   sf::String water_input;
@@ -639,7 +639,7 @@ int main() {
     clear_button.drawTo(window);
     // Flash color on click of clear button
     if(flash_clear_water) {
-      clear_button.setFillColor(sf::Color::Green);
+      clear_button.setFillColor(sf::Color::Magenta);
       cout << "here\n";
       flash_clear_water = false;
     }
@@ -871,6 +871,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
 ///////////////////////////////////////////////////////
 // Check if in clear water area
       if(clear_button.isMouseOver(window)) {
+        clear_button.setFillColor(sf::Color::Magenta);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           clear_button.setFillColor(sf::Color::Red);
           flash_clear_water = true;
@@ -884,9 +885,9 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
 
         }
       }
+      clear_button.setFillColor(sf::Color::White);
 // Check if in add event area
       if(event_add.isMouseOver(window)) {
-        confirm_event.setTexture(new_plus);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           enter_event_bool = true;
           /*display_settings_box = true;*/
