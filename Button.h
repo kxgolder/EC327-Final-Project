@@ -42,6 +42,11 @@ sf::FloatRect getGlobalBounds(){
   void setColor(sf::Color color){
     button.setFillColor(color);
   }
+
+  void setOutlineColor(sf::Color color){
+    button.setOutlineColor(color);
+  }
+  
   void setFont(sf::Font &font) {
     text.setFont(font);
   }

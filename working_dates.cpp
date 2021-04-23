@@ -32,7 +32,7 @@ const int calendar_days = 7;
 const float rec_x = (float)350 / calendar_spaces;
 const int rec_y = 40;
 const int rec_width = 150;
-const int rec_length = 300;
+const int rec_length = 400;
 const int water_bar_length = app_width - 2 * rec_x - 80;
 
 const int watergoal = 16;
@@ -381,6 +381,13 @@ int main() {
     cout << "didnt work\n";
   };
   no_add.setSmooth(true);
+
+  sf::Texture new_plus;
+  if (!new_plus.loadFromFile("Pluspink.png")) {
+    cout << "didnt work\n";
+  };
+  new_plus.setSmooth(true);
+  
 /////////////////////////////////////////////////////////////
 
 // SHAPES
@@ -394,6 +401,15 @@ int main() {
   sf::RectangleShape water_bar;
   water_bar.setPosition(rec_x, rec_length + rec_y + 40);
   water_bar.setTexture(&water_texture);
+
+// Outline of progess bar
+  sf::RectangleShape water_bar_outline;
+  water_bar_outline.setSize({water_bar_length, 50});
+  water_bar_outline.setPosition(rec_x, rec_length + rec_y + 40);
+  water_bar_outline.setFillColor(sf::Color::Transparent);
+  water_bar_outline.setOutlineColor(sf::Color::Magenta);
+  water_bar_outline.setOutlineThickness(2);
+
 
 
 // Water input button
@@ -429,16 +445,21 @@ int main() {
   confirm_event.setFont(font);
   confirm_event.centerScreen(window);
 
-
 // Event plus button
   Button event_add("", {50, 50}, 0, sf::Color::Black);
   event_add.setTexture(plus_event);
-  event_add.setPosition({1000, 450});
+  event_add.setPosition({90, 600});
 
+  /*Button event_add_back("", {60, 60}, 0, sf::Color::Red);
+  event_add_back.setFillColor(sf::Color::Transparent);
+  event_add_back.setOutlineColor(sf::Color::Red);
+  event_add_back.setPosition({85,595});
+*/
 // confirm event yes
   Button yes("", {50, 50}, 0, sf::Color::Black);
   yes.setTexture(yes_add);
   yes.setPosition({550, 250});
+
 // confirm event no
   Button no("", {50, 50}, 0, sf::Color::Black);
   no.setTexture(no_add);
@@ -478,22 +499,33 @@ int main() {
 // create directions to add event
   sf::Text add_event;
   add_event.setFont(font);
-  add_event.setString("Add Event: Enter Day, Time with minutes in 24-hour time, and Event in the Textbox below, separated by commas");
+  add_event.setString("Add Event: Enter Day, Time with minutes in 24-hour time, and Event in the Textbox below, separated by the RETURN key");
   add_event.setCharacterSize(20);
   add_event.setFillColor(sf::Color::Black);
-  add_event.setPosition(60, 470);
+  add_event.setPosition(60, 550);
   sf::Text add_info;
   add_info.setFont(font);
-  add_info.setString("Example: 12/23/2021, 12:00 - 14:30, Tennis Practice");
+  add_info.setString("Example: 12/23/2021, 12:00-14:30, Tennis Practice");
   add_info.setCharacterSize(20);
   add_info.setFillColor(sf::Color::Black);
-  add_info.setPosition(180, 510);
+  add_info.setPosition(180, 600);
 
 // add line under user input
   sf::RectangleShape line(sf::Vector2f(800, 2));
   line.setOutlineColor(sf::Color::Black);
   line.setFillColor(sf::Color::Black);
-  line.setPosition(180, 590);
+  line.setPosition(180, 670);
+
+// show error by adding a "XX" to the user line
+  /*sf::Text input_error_text;
+  input_error_text.setString("XX");
+  input_error_text.setFillColor(sf::Color::Red);
+  input_error_text.setOutlineColor(sf::Color::Red);
+  input_error_text.setFont(font);
+  input_error_text.setOutlineThickness(1);
+  input_error_text.setPosition(180,640);
+  input_error_text.setCharacterSize(25);*/
+  
 
 
 // add textbox
@@ -524,6 +556,7 @@ int main() {
   confirm_event_text.setFillColor(sf::Color::Black);
   confirm_event_text.setOutlineColor(sf::Color::White);
   confirm_event_text.setOutlineThickness(1);
+
 
 
 // Settings text box
@@ -576,14 +609,14 @@ int main() {
 // water button
     window.draw(water_button);
 
+// water bar outline
+    window.draw(water_bar_outline);
+
 // add event button
     event_add.drawTo(window);
+    /*event_add_back.drawTo(window);*/
 
 // draw text: add_event & boxes
-    window.draw(add_event);
-    window.draw(add_info);
-    window.draw(line);
-
     window.draw(add_event);
     window.draw(add_info);
     window.draw(line);
@@ -624,7 +657,7 @@ int main() {
       }
       text.setString(input_text + (show_cursor ? '_' : ' '));
       window.draw(text);
-      text.setPosition(190, 550);
+      text.setPosition(190, 630);
       text.setFillColor(sf::Color::Blue);
     }
 
@@ -642,7 +675,6 @@ int main() {
         confirm_bounds.top + (confirm_bounds.height / 2) - confirm_text_bounds.height);
       window.draw(confirm_event_text);
     }
-
 
 
     if(add_event_bool) {
@@ -703,8 +735,12 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
                   event_count = event_count + 1;
                   cout << input_text << "\n";
                   input_text.clear();
-                } else
+                } else{
+                  /*window.draw(input_error_text);
+                  sf::sleep(sf::seconds(2));*/
                   input_text.clear();
+                  
+                }
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
                 enter_event_bool = false;
@@ -850,6 +886,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
       }
 // Check if in add event area
       if(event_add.isMouseOver(window)) {
+        confirm_event.setTexture(new_plus);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           enter_event_bool = true;
           /*display_settings_box = true;*/
