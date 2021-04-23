@@ -351,11 +351,11 @@ int main() {
   };
   button_texture.setSmooth(true);
 
-  sf::Texture clear_button_t; // Button for water
+  /*sf::Texture clear_button_t; // Button for water
   if (!clear_button_t.loadFromFile("b.png")) {
     cout << "didnt work\n";
   };
-  clear_button_t.setSmooth(true);
+  clear_button_t.setSmooth(true);*/
 
   sf::Texture set_texture; // Button for water
   if (!set_texture.loadFromFile("setting.png")) {
@@ -387,6 +387,12 @@ int main() {
     cout << "didnt work\n";
   };
   reset.setSmooth(true);
+
+  sf::Texture cups_entered;
+  if (!cups_entered.loadFromFile("cups_entered.png")) {
+    cout << "didnt work\n";
+  };
+  cups_entered.setSmooth(true);
   
 /////////////////////////////////////////////////////////////
 
@@ -450,11 +456,7 @@ int main() {
   event_add.setTexture(plus_event);
   event_add.setPosition({90, 600});
 
-  /*Button event_add_back("", {60, 60}, 0, sf::Color::Red);
-  event_add_back.setFillColor(sf::Color::Transparent);
-  event_add_back.setOutlineColor(sf::Color::Red);
-  event_add_back.setPosition({85,595});
-*/
+
 // confirm event yes
   Button yes("", {50, 50}, 0, sf::Color::Black);
   yes.setTexture(yes_add);
@@ -535,8 +537,8 @@ int main() {
 
 /// Box to show user what input of water is
   sf::RectangleShape water_box;
-  water_box.setSize(sf::Vector2f(100, 100));
-  water_box.setFillColor(sf::Color::Blue);
+  water_box.setSize(sf::Vector2f(150, 100));
+  water_box.setTexture(&cups_entered);
   water_box.setOutlineThickness(1);
   water_box.setPosition(650, 400);
 
@@ -557,6 +559,14 @@ int main() {
   confirm_event_text.setOutlineColor(sf::Color::White);
   confirm_event_text.setOutlineThickness(1);
 
+// Text to show percentage of water
+  sf::Text perc_water_text;
+  perc_water_text.setFillColor(sf::Color::Blue);
+  perc_water_text.setFont(font);
+  perc_water_text.setOutlineThickness(0.1);
+  perc_water_text.setPosition(1000,450);
+  perc_water_text.setCharacterSize(20);
+  perc_water_text.setString(to_string(percent_water*100) + " Percent of Goal");
 
 
 // Settings text box
@@ -611,6 +621,9 @@ int main() {
 
 // water bar outline
     window.draw(water_bar_outline);
+
+// percent shown
+    window.draw(perc_water_text);
 
 // add event button
     event_add.drawTo(window);
@@ -736,8 +749,6 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
                   cout << input_text << "\n";
                   input_text.clear();
                 } else{
-                  /*window.draw(input_error_text);
-                  sf::sleep(sf::seconds(2));*/
                   input_text.clear();
                   
                 }
@@ -816,6 +827,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
             cout << water_consumed << "\n";
             water_input += event.text.unicode;
             water_output.setString(water_input);
+            perc_water_text.setString(to_string(percent_water*100) + " Percent of Goal");
             disp_text = true;
           } else if (event.text.unicode == 13) {
             if(water_consumed.size() == 0) {
@@ -827,6 +839,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
               update_water(water_consumed, total_water, percent_water);
               water_consumed.clear();
               water_input.clear();
+              perc_water_text.setString(to_string(percent_water*100) + " Percent of Goal");
               display_water_box = false;
               disp_text = false;
               water_enter = false;
@@ -836,6 +849,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
               water_consumed.pop_back();
               water_input.erase(water_input.getSize() - 1, 1);
               water_output.setString(water_input);
+              perc_water_text.setString(to_string(percent_water*100) + " Percent of Goal");
             }
           }
         }
@@ -877,10 +891,15 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
           flash_clear_water = true;
           total_water = 0;
           percent_water = 0; // placeholder for clear button
-          if (water_consumed.size() < 1)
+          if (water_consumed.size() < 1){
             update_water("0", total_water, percent_water);
-          else
+            perc_water_text.setString(to_string(percent_water*100) + " Percent of Goal");
+            perc_water_text.setString(to_string(percent_water*100) + " Percent of Goal");
+          }
+          else{
             update_water(water_consumed, total_water, percent_water);
+
+          }
           cout << "You are in water clear button\n";
 
         }
@@ -906,6 +925,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
       }
 // Check if in add event button
       if(yes.isMouseOver(window)) {
+        event_add.setFillColor(sf::Color::Magenta);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           /*display_settings_box = true;*/
           enter_event_bool = false;
@@ -915,6 +935,7 @@ if(calendar.size()>0){                        ////NEEDS A TIMER
 
         }
       }
+      event_add.setFillColor(sf::Color::White);
       if(no.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           /*display_settings_box = true;*/
