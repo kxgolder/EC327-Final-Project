@@ -32,7 +32,7 @@ const int calendar_days = 7;
 const float rec_x = (float)350 / calendar_spaces;
 const int rec_y = 40;
 const int rec_width = 150;
-const int rec_length = 300;
+const int rec_length = 400;
 const int water_bar_length = app_width - 2 * rec_x - 80;
 
 const int watergoal = 16;
@@ -402,6 +402,15 @@ int main() {
   water_bar.setPosition(rec_x, rec_length + rec_y + 40);
   water_bar.setTexture(&water_texture);
 
+// Outline of progess bar
+  sf::RectangleShape water_bar_outline;
+  water_bar_outline.setSize({water_bar_length, 50});
+  water_bar_outline.setPosition(rec_x, rec_length + rec_y + 40);
+  water_bar_outline.setFillColor(sf::Color::Transparent);
+  water_bar_outline.setOutlineColor(sf::Color::Magenta);
+  water_bar_outline.setOutlineThickness(2);
+
+
 
 // Water input button
   sf::CircleShape water_button(40);
@@ -599,6 +608,9 @@ int main() {
 
 // water button
     window.draw(water_button);
+
+// water bar outline
+    window.draw(water_bar_outline);
 
 // add event button
     event_add.drawTo(window);
