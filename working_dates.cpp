@@ -124,10 +124,17 @@ void create_event(string event_date, string event_time, string event_desc, Event
   a.button_spacing = 355 * (float)first_time_as_seconds / SECONDS_IN_DAY // needs to be a percentage of the final calendar box
 
 // creating the button for the calendar event
+  sf::Texture event_texture;
+  if(!event_texture.loadFromFile("Event_background.png")) {
+    cout << "didnt work\n";
+  };
+  event_texture.setSmooth(true);
+
   Button b(event_desc, {a.buttonx, a.buttony}, 10, sf::Color::Black);
   a.b = b;
   a.b.setOutlineColor(sf::Color::Black);
   a.b.setOutlineThickness(1);
+  a.b.setTexture(event_texture);
 }
 
 bool check_date(string date) {
@@ -414,12 +421,17 @@ int main() {
   sf::Font font;
   font.loadFromFile("/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf");
 
-  sf::Texture wood_background; // Background for weekdays
+  /*sf::Texture wood_background; // Background for weekdays
   if (!wood_background.loadFromFile("wood.jpg")) {
     cout << "didnt work\n";
   };
-  wood_background.setSmooth(true);
+  wood_background.setSmooth(true);*/
 
+  sf::Texture paper_texture;
+  if (!paper_texture.loadFromFile("paper.png")) {
+    cout << "didnt work\n";
+  };
+  paper_texture.setSmooth(true);
 
   sf::Texture app_background; // Background for app
   if (!app_background.loadFromFile("pastel.jpg")) {
@@ -439,11 +451,6 @@ int main() {
   };
   button_texture.setSmooth(true);
 
-  /*sf::Texture clear_button_t; // Button for water
-  if (!clear_button_t.loadFromFile("b.png")) {
-    cout << "didnt work\n";
-  };
-  clear_button_t.setSmooth(true);*/
 
   sf::Texture set_texture; // Button for water
   if (!set_texture.loadFromFile("setting.png")) {
@@ -477,7 +484,7 @@ int main() {
   reset.setSmooth(true);
 
   sf::Texture cups_entered;
-  if (!cups_entered.loadFromFile("cups_entered.png")) {
+  if (!cups_entered.loadFromFile("enter_cups.png")) {
     cout << "didnt work\n";
   };
   cups_entered.setSmooth(true);
@@ -493,6 +500,7 @@ int main() {
     cout << "didnt work\n";
   };
   calendar_left.setSmooth(true);
+
 
 /////////////////////////////////////////////////////////////
   // read in the files here and check which are in period
@@ -559,7 +567,7 @@ int main() {
   rectangle.setSize(sf::Vector2f(rec_width, rec_length));
   rectangle.setOutlineThickness(1);
   rectangle.setPosition(rec_x, rec_y);
-  rectangle.setTexture(&wood_background);
+  rectangle.setTexture(&paper_texture);
 
 
 // Button to clear the current water count
@@ -570,7 +578,6 @@ int main() {
   clear_button.setPosition({app_width - rec_x * 2 - 20, rec_length + rec_y + 120 });
 
 // Go forward a week button
-
   Button forward_week("",{20,20},0,sf::Color::Black);
   forward_week.setPosition({1370,50});
   forward_week.setTexture(calendar_right);
@@ -579,6 +586,7 @@ int main() {
   Button back_week("",{20,20},0,sf::Color::Black);
   back_week.setPosition({10,50});
   back_week.setTexture(calendar_left);
+
 // Setting buttons
   Button settings("", {100, 100}, 0, sf::Color::Black);
   settings.setFont(font);
@@ -596,7 +604,6 @@ int main() {
   event_add.setFillColor(sf::Color::White);
   event_add.setPosition({90, 600});
 
-
 // confirm event yes
   Button yes("", {50, 50}, 0, sf::Color::Black);
   yes.setTexture(yes_add);
@@ -607,11 +614,9 @@ int main() {
   no.setTexture(no_add);
   no.setPosition({800, 250});
 
-
 // Names for the Calendar boxes
   vector<string> days = set_calendar_date(local_time);
   vector<sf::Text> day;
-
 
 // First day to copy
   int day_x = rec_x + 50;
@@ -670,19 +675,17 @@ int main() {
   input_error_text.setPosition(180,640);
   input_error_text.setCharacterSize(25);*/
 
-
-
-// add textbox
+// add textbox for user input
   string input_text;
   sf::Text text("", font);
   sf::Clock clock;
 
 /// Box to show user what input of water is
   sf::RectangleShape water_box;
-  water_box.setSize(sf::Vector2f(150, 100));
+  water_box.setSize(sf::Vector2f(200, 150));
   water_box.setTexture(&cups_entered);
   water_box.setOutlineThickness(1);
-  water_box.setPosition(650, 400);
+  water_box.setPosition(600, 400);
 
 // Text user inputs in water box
   sf::String water_input;
@@ -711,7 +714,7 @@ int main() {
   if(percent_water < 1)
     perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
   else
-    perc_water_text.setString("Water Goal Complete");
+    perc_water_text.setString("Water Goal Complete!");
 
 
 // Settings text box
@@ -788,8 +791,6 @@ int main() {
     /*    window.draw(day_text);*/
     for (int i = 0; i < day.size(); i++)
       window.draw(day.at(i));
-
-
 
 // Settings butotn
     settings.drawTo(window);
@@ -1015,7 +1016,7 @@ int main() {
               if(percent_water < 1)
                 perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
               else
-                perc_water_text.setString("Water Goal Complete");
+                perc_water_text.setString("Water Goal Complete!");
               display_water_box = false;
               disp_text = false;
               water_enter = false;
