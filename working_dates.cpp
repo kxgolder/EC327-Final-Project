@@ -19,6 +19,7 @@ using std::string;
 using std::stoi;
 using std::vector;
 using std::stringstream;
+using std::ifstream;
 using std::time_t;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -64,6 +65,43 @@ class Event {
   bool in_period;
 
 };
+
+bool watercheck(float goal){
+  float hours[] = {12,15,18,21};
+  float increment = goal/4; 
+  float minimumwater[] = {increment, 2*increment, 3*increment, goal};
+  float h,g;
+  string line;
+  vector<string> stringwater;
+
+  std::time_t time = std::time(NULL);            
+  std::tm now = *std::localtime(&time);
+  h = now.tm_hour;
+
+  ifstream myfile ("water_state.txt");
+  if (myfile.is_open())
+  {
+    while(getline (myfile,line))
+    {
+      stringwater.push_back(line);
+    }
+    myfile.close();
+  }
+
+  g = stof(stringwater.at(0));
+
+  int i =0;
+  for (auto test : hours){
+    if (h > test)
+      i++;
+  }
+  if (g < minimumwater[i])
+
+    return true;
+  else 
+    return false;
+
+}
 
 void create_event(string event_date, string event_time, string event_desc, Event& a) {
 // store the user inputs into the event
@@ -172,6 +210,7 @@ bool check_date(string date) {
   return 1;
 }
 
+
 // function to remoove spaces
 string removeSpaces(string str) {
   str.erase(remove(str.begin(), str.end(), ' '), str.end());
@@ -237,8 +276,6 @@ bool check_time(string user_time) {
 
   return 1;
 }
-
-
 
 
 void update_water(string w, float& u, float& j) {
@@ -716,6 +753,26 @@ int main() {
   else
     perc_water_text.setString("Water Goal Complete!");
 
+// set water popup
+  Button popup("", {300, 100}, 0, sf::Color::Black);
+  popup.setFillColor(sf::Color::Blue);
+  popup.setOutlineColor(sf::Color::Black);
+
+
+  sf::Text popup_message;
+  popup_message.setString("DRINK MORE WATER");
+  popup_message.setCharacterSize(30);
+  popup_message.setPosition(1000, 400);
+  popup_message.setFont(font);
+  popup_message.setFillColor(sf::Color::White);
+  popup_message.setOutlineColor(sf::Color::Black);
+  popup_message.setOutlineThickness(0.1);
+
+
+  Button close("",{30,30}, 0, sf::Color::Red); 
+  close.setPosition({810,260});
+  close.setTexture(no_add);
+
 
 // Settings text box
   /*  Textbox settings_textbox(100,sf::Color::Red,1);
@@ -733,6 +790,7 @@ int main() {
   bool add_event_bool = false;
   bool increase_by_week = false;
   bool reduce_by_week = false;
+  bool checker;
 
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
@@ -746,6 +804,17 @@ int main() {
       else
         water_bar.setSize(sf::Vector2f(percent_water * water_bar_length, 50));
     }
+// check perioodic water level
+    std::time_t time = std::time(NULL);            
+    std::tm now = *std::localtime(&time);
+    int h = now.tm_hour;
+    int m = now.tm_hour;
+    for (int i=0; i<24; i++){
+      if (i==h)
+        if (0 == m)
+           checker = watercheck(watergoal);
+    }
+
 // Go forward a week
     if(increase_by_week) {
       local_time = local_time + weeks(1);
@@ -896,6 +965,20 @@ int main() {
         confirm_bounds.left + (confirm_bounds.width / 2) - (confirm_text_bounds.width / 2),
         confirm_bounds.top + (confirm_bounds.height / 2) - confirm_text_bounds.height);
       window.draw(confirm_event_text);
+    }
+
+    if (checker){
+      popup.centerScreen(window);
+      popup.drawTo(window);
+      close.drawTo(window);
+
+      sf::FloatRect popup_bounds = popup.getGlobalBounds();
+      sf::FloatRect popup_message_bounds = popup_message.getGlobalBounds();
+
+      popup_message.setPosition(
+      popup_bounds.left + (popup_bounds.width / 2) - (popup_message_bounds.width / 2),
+      popup_bounds.top + (popup_bounds.height / 2) - popup_message_bounds.height);
+      window.draw(popup_message);
     }
     // Events
     while(window.pollEvent(event)) {
@@ -1143,6 +1226,16 @@ int main() {
         }
       } 
 
+// Check if water popup is closed
+      if(checker){
+        if(close.isMouseOver(window)) {
+          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            /*display_settings_box = true;*/
+            cout << "You are in close button\n";
+            checker = false;
+          }
+        }
+      }
 
       if (event.type == sf::Event::Closed) {
         std::ofstream read_into_calendar("calendar.txt");
@@ -1157,6 +1250,7 @@ int main() {
 
     window.display();
   }
+
 
 
   return 0;

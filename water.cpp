@@ -182,15 +182,18 @@ void update_water(string w, float& u, float& j) {
 }
 
 bool watercheck(){
+  // checks "water_state.txt" for water input from user
+  // returns true if they need to drink more water
+  // returns false if they had enough water
   float hours[] = {12,15,18,21};
   float minimumwater[] = {2,4,6,8};
   float h,g;
   string line;
   vector<string> stringwater;
 
-  // std::time_t time = std::time(NULL);            
-  // std::tm now = *std::localtime(&time);
-  // h = now.tm_hour;
+  std::time_t time = std::time(NULL);            
+  std::tm now = *std::localtime(&time);
+  h = now.tm_hour;
 
   ifstream myfile ("water_state.txt");
   if (myfile.is_open())
@@ -210,9 +213,10 @@ bool watercheck(){
       i++;
   }
   if (g < minimumwater[i])
-    cout << "drink more water!\n";
-  
-  return 0;
+    return true;
+
+  else 
+    return false;
 
 }
 
