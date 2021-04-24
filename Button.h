@@ -46,6 +46,10 @@ sf::FloatRect getGlobalBounds(){
   void setOutlineColor(sf::Color color){
     button.setOutlineColor(color);
   }
+
+  void setOutlineThickness(float thickness){
+    button.setOutlineThickness(thickness);
+  }
   
   void setFont(sf::Font &font) {
     text.setFont(font);
@@ -70,8 +74,8 @@ sf::FloatRect getGlobalBounds(){
   void setPosition(sf::Vector2f pos) {
     button.setPosition(pos);
 
-    float xPos = (pos.x + button.getLocalBounds().width / 2) - (text.getLocalBounds().width / 2);
-    float yPos = (pos.y + button.getLocalBounds().height / 2) - (text.getLocalBounds().height / 2);
+    float xPos = (pos.x + button.getGlobalBounds().width / 2) - (text.getGlobalBounds().width / 2);
+    float yPos = (pos.y + button.getGlobalBounds().height / 2) - (text.getGlobalBounds().height / 2);
     text.setPosition(xPos,yPos);
   }
 
