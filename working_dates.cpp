@@ -37,7 +37,6 @@ const int rec_width = 150;
 const int rec_length = 400;
 const int water_bar_length = app_width - 2 * rec_x - 80;
 
-const int watergoal = 16;
 
 // Seven day period for checking valid displayable events
 class day_period_7 : public time_period {
@@ -269,7 +268,7 @@ bool check_time(string user_time) {
 }
 
 
-void update_water(string w, float& u, float& j) {
+void update_water(string w, float& u, float& j, int watergoal) {
 
   float added_water;
   // check for multiple decimal inputs, return 0 if only decimal or multiples
@@ -424,10 +423,13 @@ int main() {
   string event_date,
          event_time,
          event_desc;
+  string water_goal_string;
   sf::Text confirm_event_text;
   Event calendar_event;
   vector<Event> calendar;
   string dashed;
+
+  int watergoal = 8;
 
   date local_time(day_clock::local_day()); //get local time to set calendar date
 
@@ -544,6 +546,12 @@ int main() {
     cout << "didnt work\n";
   };
   event_texture.setSmooth(true);
+
+  sf::Texture water_prompt;
+  if(!water_prompt.loadFromFile("enter_water_prompt.png")) {
+    cout << "didnt work\n";
+  };
+  water_prompt.setSmooth(true);
 
 /////////////////////////////////////////////////////////////
   // read in the files here and check which are in period
@@ -705,6 +713,23 @@ int main() {
   sf::Text text("", font);
   sf::Clock clock;
 
+// Box to prompt user for water goal
+  sf::RectangleShape water_prompt_box;
+  water_prompt_box.setSize(sf::Vector2f(500,300));
+  water_prompt_box.setTexture(&water_prompt);
+  water_prompt_box.setOutlineThickness(1);
+  water_prompt_box.setPosition(450,200);
+
+// Text user inputs in water prompt goal
+  sf::String water_goal_input;
+  sf::Text water_goal_output;
+  water_goal_output.setPosition(700, 450);
+  water_goal_output.setFillColor(sf::Color::Black);
+  water_goal_output.setFont(font);
+  water_goal_output.setOutlineColor(sf::Color::Black);
+  water_goal_output.setOutlineThickness(1);
+  water_goal_output.setCharacterSize(40);
+
 /// Box to show user what input of water is
   sf::RectangleShape water_box;
   water_box.setSize(sf::Vector2f(200, 150));
@@ -779,6 +804,15 @@ int main() {
   close_error.setPosition({810,200});
   close_error.setTexture(no_add);
 
+  // Text to show current water goal
+  sf::Text current_watergoal;
+  current_watergoal.setFillColor(sf::Color::Blue);
+  current_watergoal.setFont(font);
+  current_watergoal.setOutlineThickness(0.1);
+  current_watergoal.setPosition(1050,600);
+  current_watergoal.setCharacterSize(25);
+  current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
+
 // Settings text box
   /*  Textbox settings_textbox(100,sf::Color::Red,1);
     settings_textbox.setFont(font);
@@ -789,6 +823,8 @@ int main() {
   bool disp_text = false;
   bool water_enter = false;
   bool display_settings_box = false;
+  bool water_goal_enter = false;
+  bool display_water_goal = false;
   bool flash_clear_water = false;
   bool enter_event_bool = false;
   bool confirm_event_bool = false;
@@ -880,6 +916,9 @@ int main() {
 // percent shown
     window.draw(perc_water_text);
 
+// water goal shown
+    window.draw(current_watergoal);
+
 // add event button
     event_add.drawTo(window);
     /*event_add_back.drawTo(window);*/
@@ -968,9 +1007,22 @@ int main() {
     // Draw forward week/back week
     back_week.drawTo(window);
     forward_week.drawTo(window);
-    /*
-      if(display_settings_box)
-        settings_textbox.drawTo(window);*/
+
+    
+      if(display_settings_box){
+        window.draw(water_prompt_box);
+        sf::FloatRect water_prompt_Bounds = water_prompt_box.getGlobalBounds();
+        sf::FloatRect water_goal_text_Bounds = water_goal_output.getGlobalBounds();
+
+        water_goal_output.setPosition(
+        water_prompt_Bounds.left + (water_prompt_Bounds.width / 2) - (water_goal_text_Bounds.width / 2),
+        water_prompt_Bounds.top + (water_prompt_Bounds.height / 2) - water_goal_text_Bounds.height);
+      }
+
+      // display water goal input
+      if(display_water_goal)
+        window.draw(water_goal_output);
+
     if(confirm_event_bool) {
       confirm_event.drawTo(window);
       yes.drawTo(window);
@@ -1146,7 +1198,7 @@ int main() {
               water_enter = false;
             }
             if(water_consumed.size() > 0) {
-              update_water(water_consumed, total_water, percent_water);
+              update_water(water_consumed, total_water, percent_water, watergoal);
               water_consumed.clear();
               water_input.clear();
               if(percent_water < 1){
@@ -1177,6 +1229,46 @@ int main() {
           }
         }
       }
+
+
+  // water goal entering
+      if (water_goal_enter) {
+         if(event.type == sf::Event::TextEntered) {
+          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+            tmp = static_cast<char>(event.text.unicode);
+            water_goal_string.append(tmp);
+            cout << water_goal_string << "\n";
+            water_goal_input += event.text.unicode;
+            water_goal_output.setString(water_goal_input);
+            display_water_goal = true;
+          } else if (event.text.unicode == 13) {
+            if(water_goal_string.size() == 0) {
+              display_settings_box = false;
+              display_water_goal = false;
+              water_goal_enter = false;
+            }
+            if(water_goal_string.size() > 0) {
+              watergoal = stoi(water_goal_string);
+              current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
+              water_goal_string.clear();
+              water_goal_input.clear();
+  
+          } else if (event.text.unicode == 8) {
+            if(water_goal_string.size() > 0) {
+              water_goal_string.pop_back();
+              water_goal_input.erase(water_goal_input.getSize() - 1, 1);
+              water_goal_output.setString(water_goal_input);
+            }
+          } else if (event.text.unicode == 27) {
+            display_settings_box = false;
+            water_goal_enter = false;
+          }
+        }
+      }
+      }
+
+
+
 /////////////////////////////////////////////////////
 // Check if in water button region
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -1217,12 +1309,12 @@ int main() {
           total_water = 0;
           percent_water = 0; // placeholder for clear button
           if (water_consumed.size() < 1) {
-            update_water("0", total_water, percent_water);
+            update_water("0", total_water, percent_water, watergoal);
             string water_string = to_string(percent_water*100);
             water_string = water_string.substr(0,5);
             perc_water_text.setString(water_string + " Percent of Goal");
           } else {
-            update_water(water_consumed, total_water, percent_water);
+            update_water(water_consumed, total_water, percent_water, watergoal);
 
           }
           cout << "You are in water clear button\n";
@@ -1240,7 +1332,9 @@ int main() {
 // Check if in settings area
       if(settings.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          /*display_settings_box = true;*/
+          display_settings_box = true;
+          display_water_goal = true;
+          water_goal_enter = true;
           cout << "You are in settings\n";
 
         }
