@@ -861,6 +861,7 @@ int main() {
       checker = watercheck(total_water,watergoal,water_popup_message,h);
     }
 
+
 // Go forward a week
     if(increase_by_week) {
       local_time = local_time + weeks(1);
