@@ -159,6 +159,7 @@ void create_event(string event_date, string event_time, string event_desc, Event
   a.b = b;
   a.b.setOutlineColor(sf::Color::Black);
   a.b.setOutlineThickness(1);
+ 
 }
 
 bool check_date(string date) {
@@ -399,6 +400,15 @@ string remove_dashes(string remove_dashes) {
   return remove_dashes;
 
 }
+
+/*void check_delete(vector<Event>& calendar, sf::RenderWindow& window){
+  cout<<"yes";
+for(auto e : calendar){
+  if(e.b.isMouseOver(window))
+    cout<<"maybe";
+}
+
+}*/
 int main() {
   int event_count = 0;
   float total_water = (float)0;
@@ -537,12 +547,7 @@ int main() {
 
   std::ifstream read_events;
   read_events.open("calendar.txt");
-  /*if (!read_events) {
-      std::cerr << "Error in opening the file" << std::endl;
-      return 1; // if this is main
-  }*/
 
-  /*vector<Event> calendar;*/
   Event cal_event;
   while (read_events >> cal_event.date >> cal_event.time >> cal_event.description) {
     string descrip = remove_dashes(cal_event.description);
@@ -788,10 +793,11 @@ int main() {
   bool reduce_by_week = false;
   bool checker = false;
   bool flash_enter_water = false;
+/*  bool check_delete_bool = false;*/
 
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
-sf::Time elapsed_time;
+
   while(window.isOpen()) {
 
     sf::Event event;
@@ -985,6 +991,19 @@ sf::Time elapsed_time;
       popup_bounds.top + (popup_bounds.height / 2) - water_popup_message_bounds.height);
       window.draw(water_popup_message);
     }
+
+/*    if(check_delete_bool){
+      for (int i = 0;i<calendar.size();i++){
+       if( calendar.at(i).b.isMouseOver(window));{
+       sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        sf::FloatRect bounds = calendar.at(i).b.getGlobalBounds();
+          cout<<"why";
+      if (bounds.contains(mouse)) {
+        cout<<"hi";
+     }
+      }
+    }
+  }*/
     // Events
     while(window.pollEvent(event)) {
 
@@ -1144,6 +1163,7 @@ sf::Time elapsed_time;
         }
       }
 
+
 ///////////////////////////////////////////////////////
 
 // check if in pop-up
@@ -1248,16 +1268,10 @@ sf::Time elapsed_time;
           }
         }
       } 
-
- /*     if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-        check_delete(calendar);
-    }
-*/
-
-
+// Close and save the calendar files
       if (event.type == sf::Event::Closed) {
         std::ofstream read_into_calendar("calendar.txt");
-        for (auto event : calendar) { // update the water save file
+        for (auto event : calendar) { 
           dashed = add_dashes(event.description);
           read_into_calendar << event.date << " " << event.time << " " << dashed << "\n";
         }
