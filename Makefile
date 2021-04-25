@@ -21,3 +21,6 @@ working_dates: working_dates.cpp
 
 timetry: timetry.cpp
 	g++ timetry.cpp -o t -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
+
+final: final_project.cpp
+	g++ final_project.cpp -o final -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
