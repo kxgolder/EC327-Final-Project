@@ -984,7 +984,8 @@ int main() {
       calendar.back().b.setTexture(event_texture);
       calendar.back().b.setTextFill(sf::Color::Black);
       if(time_conflict(calendar.back(),calendar)){
-        cout<<"hi";
+        input_error_text.setString("Error! Time Conflict\n Please Try Again");
+        error_bool = true;
         calendar.pop_back();
       }
       else{
