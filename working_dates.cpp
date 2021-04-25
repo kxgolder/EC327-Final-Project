@@ -404,6 +404,72 @@ string remove_dashes(string remove_dashes) {
 
 }
 
+// checks how many events there are that day
+bool start_day_reminder(vector<int> months, vector<int> dates, int* count){
+  std::time_t time = std::time(NULL);            
+  std::tm now = *std::localtime(&time);
+  int tempcount = 0;
+  int index = 0;
+  int k;
+
+  for (auto j : months){
+    k = dates.at(index);
+      if (j == now.tm_mon +1)
+        if (k == now.tm_mday)
+          tempcount++;
+    index++;
+    }
+  if (tempcount > 0){
+    *count = tempcount;
+    return true; 
+  }
+  else return false;
+  }
+
+// function to format calander events
+void getevents(vector<int>* mlocation, vector<int>* dlocation){
+  vector<string> allevents;
+  string line;
+  vector<int> months;
+  vector<int> dates;
+  string mtemp = "";
+  string dtemp = "";
+
+  ifstream read_events;
+  read_events.open("calendar.txt");
+
+  if (read_events.is_open())
+  {
+    while(getline (read_events,line))
+    {
+      cout << line << "\n";
+      allevents.push_back(line);
+    }
+    read_events.close();
+  }
+
+  for (string i : allevents){
+    if (i.at(1)== '/'){
+      // months.push_back(stoi(i.at(0)));
+      mtemp = i.at(0);
+      dtemp = dtemp + i.at(2) + i.at(3);
+    }
+    else {
+      // temp = i.at(0) + i.at(1);
+      mtemp = mtemp + i.at(0) + i.at(1);
+      dtemp = dtemp + i.at(3) + i.at(4);
+    }
+    months.push_back(stoi(mtemp));
+    dates.push_back(stoi(dtemp));
+    mtemp.clear();
+    dtemp.clear();
+  }
+  *mlocation = months;
+  *dlocation = dates;
+}
+
+
+
 /*void check_delete(vector<Event>& calendar, sf::RenderWindow& window){
   cout<<"yes";
 for(auto e : calendar){
@@ -813,6 +879,23 @@ int main() {
   current_watergoal.setCharacterSize(25);
   current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
 
+  //Button to notify how many events that day
+  Button event_count_reminder("", {300, 150}, 0, sf::Color::Black);
+  event_count_reminder.setFillColor(sf::Color::White);
+  event_count_reminder.setOutlineColor(sf::Color::Black);
+
+  sf::Text event_popup_message;
+  event_popup_message.setCharacterSize(20);
+  event_popup_message.setPosition(1000, 400);
+  event_popup_message.setFont(font);
+  event_popup_message.setFillColor(sf::Color::White);
+  event_popup_message.setOutlineColor(sf::Color::Black);
+  event_popup_message.setOutlineThickness(0.1);
+
+  Button close_event_pop("",{30,30}, 0, sf::Color::Red); 
+  close_event_pop.setPosition({810,200});
+  close_event_pop.setTexture(no_add);
+
 // Settings text box
   /*  Textbox settings_textbox(100,sf::Color::Red,1);
     settings_textbox.setFont(font);
@@ -834,6 +917,7 @@ int main() {
   bool checker = false;
   bool flash_enter_water = false;
   bool error_bool = false;
+  bool show_event_count = false;
 
 /*  bool check_delete_bool = false;*/
 
@@ -861,6 +945,32 @@ int main() {
       checker = watercheck(total_water,watergoal,water_popup_message,h);
     }
 
+    // check number of events for the day
+    // check at the start of the day for events
+    int ncount; 
+    vector<int> months;
+    vector<int> dates;
+
+    if (h == 8 & m == 0 & s == 0){
+      getevents(&months, &dates);
+      show_event_count = start_day_reminder(months,dates, &ncount);
+    }
+    if (show_event_count){
+      if (ncount > 0){
+        event_popup_message.setString("You have " + to_string(ncount) + " events today!\n Remember to take breaks!");
+        event_count_reminder.centerScreen(window);
+        event_count_reminder.drawTo(window);
+        close_event_pop.drawTo(window);
+
+        sf::FloatRect event_count_reminder_bounds = event_count_reminder.getGlobalBounds();
+        sf::FloatRect event_popup_message_bounds = event_popup_message.getGlobalBounds();
+
+        event_popup_message.setPosition(
+        event_count_reminder_bounds.left + (event_count_reminder_bounds.width / 2) - (event_popup_message_bounds.width / 2),
+        event_count_reminder_bounds.top + (event_count_reminder_bounds.height / 2) - event_popup_message_bounds.height);
+        window.draw(event_popup_message);
+    }
+  }
 
 // Go forward a week
     if(increase_by_week) {
@@ -1391,6 +1501,17 @@ int main() {
           }
         }
       } 
+
+// Check if event reminder popup is closed
+      if(show_event_count){
+        if(close_event_pop.isMouseOver(window)) {
+          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            /*display_settings_box = true;*/
+            cout << "You are in close button\n";
+          show_event_count = false;
+          }
+        }
+      }
 
 // check is error message is closed
       if(error_bool){
