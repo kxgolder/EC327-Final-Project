@@ -184,6 +184,10 @@ bool check_date(string date) {
   year = stoi(dates.at(2));
   if(month < 0 || month > 12)
     return 0;
+  if(month == 4 || month == 6 || month == 9 || month == 11){
+    if (day < 0 || day > 30) //account for the 30 day months
+      return 0;
+  }
   if(day < 0 || day > 31)
     return 0;
   if(year < 2021 || year > 9999)
@@ -588,13 +592,10 @@ int main() {
   water_bar_outline.setOutlineColor(sf::Color::Magenta);
   water_bar_outline.setOutlineThickness(2);
 
-
-
 // Water input button
   sf::CircleShape water_button(40);
   water_button.setTexture(&button_texture);
   water_button.setPosition(app_width - rec_x * 2 - 20, rec_length + rec_y + 30);
-
 
 // For the calendar shapes
   vector<sf::RectangleShape> rect_vec;
@@ -603,7 +604,6 @@ int main() {
   rectangle.setOutlineThickness(1);
   rectangle.setPosition(rec_x, rec_y);
   rectangle.setTexture(&paper_texture);
-
 
 // Button to clear the current water count
   Button clear_button("", { 80, 30 }, 15, sf::Color::Black);
@@ -700,16 +700,6 @@ int main() {
   line.setFillColor(sf::Color::Black);
   line.setPosition(180, 670);
 
-// show error by adding a "XX" to the user line
-  /*sf::Text input_error_text;
-  input_error_text.setString("XX");
-  input_error_text.setFillColor(sf::Color::Red);
-  input_error_text.setOutlineColor(sf::Color::Red);
-  input_error_text.setFont(font);
-  input_error_text.setOutlineThickness(1);
-  input_error_text.setPosition(180,640);
-  input_error_text.setCharacterSize(25);*/
-
 // add textbox for user input
   string input_text;
   sf::Text text("", font);
@@ -759,7 +749,6 @@ int main() {
   popup.setFillColor(sf::Color::Blue);
   popup.setOutlineColor(sf::Color::Black);
 
-
   sf::Text water_popup_message;
   water_popup_message.setString("DRINK MORE WATER");
   water_popup_message.setCharacterSize(20);
@@ -769,11 +758,26 @@ int main() {
   water_popup_message.setOutlineColor(sf::Color::Black);
   water_popup_message.setOutlineThickness(0.1);
 
-
   Button close("",{30,30}, 0, sf::Color::Red); 
   close.setPosition({810,260});
   close.setTexture(no_add);
 
+  // show user input error for dates and times
+  Button error_popup("", {300, 150}, 0, sf::Color::Black);
+  error_popup.setFillColor(sf::Color::White);
+  error_popup.setOutlineColor(sf::Color::Red);
+  error_popup.setOutlineThickness(5);
+
+  sf::Text input_error_text;
+  input_error_text.setFillColor(sf::Color::Black);
+  input_error_text.setOutlineColor(sf::Color::Red);
+  input_error_text.setFont(font);
+  input_error_text.setOutlineThickness(0.08);
+  input_error_text.setCharacterSize(25);
+
+  Button close_error("",{30,30}, 0, sf::Color::Red); 
+  close_error.setPosition({810,200});
+  close_error.setTexture(no_add);
 
 // Settings text box
   /*  Textbox settings_textbox(100,sf::Color::Red,1);
@@ -793,6 +797,8 @@ int main() {
   bool reduce_by_week = false;
   bool checker = false;
   bool flash_enter_water = false;
+  bool error_bool = false;
+
 /*  bool check_delete_bool = false;*/
 
 ///////////////////////////////////////////
@@ -978,6 +984,7 @@ int main() {
       window.draw(confirm_event_text);
     }
 
+    // draw 'drink water' popup
     if (checker){
       popup.centerScreen(window);
       popup.drawTo(window);
@@ -990,6 +997,22 @@ int main() {
       popup_bounds.left + (popup_bounds.width / 2) - (water_popup_message_bounds.width / 2),
       popup_bounds.top + (popup_bounds.height / 2) - water_popup_message_bounds.height);
       window.draw(water_popup_message);
+    }
+
+    // draw error popop when error occurs
+    if (error_bool) {
+      error_popup.centerScreen(window);
+      error_popup.drawTo(window);
+      close_error.drawTo(window);
+
+      sf::FloatRect error_popup_bounds = error_popup.getGlobalBounds();
+      sf::FloatRect input_error_message_bounds = input_error_text.getGlobalBounds();
+
+      input_error_text.setPosition(
+      error_popup_bounds.left + (error_popup_bounds.width / 2) - (input_error_message_bounds.width / 2),
+      error_popup_bounds.top + (error_popup_bounds.height / 2) - input_error_message_bounds.height + 30);
+      window.draw(input_error_text);
+
     }
 
 /*    if(check_delete_bool){
@@ -1030,7 +1053,8 @@ int main() {
                   input_text.clear();
                 } else {
                   input_text.clear();
-
+                  input_error_text.setString("Error! Invalid Date\n Please Try Again");
+                  error_bool = true;
                 }
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
@@ -1057,8 +1081,11 @@ int main() {
                   event_count = event_count + 1;
                   cout << input_text << "\n";
                   input_text.clear();
-                } else
+                } else{
                   input_text.clear();
+                  input_error_text.setString("Error! Invalid Time\n Please Try Again");
+                  error_bool = true;
+                }
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
                 enter_event_bool = false;
@@ -1268,6 +1295,18 @@ int main() {
           }
         }
       } 
+
+// check is error message is closed
+      if(error_bool){
+        if(close_error.isMouseOver(window)) {
+          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            /*display_settings_box = true;*/
+            cout << "You are in close button\n";
+            error_bool = false;
+          }
+        }
+      }
+
 // Close and save the calendar files
       if (event.type == sf::Event::Closed) {
         std::ofstream read_into_calendar("calendar.txt");
