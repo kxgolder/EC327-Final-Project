@@ -10,6 +10,7 @@
 #include "Button.h"
 #include <sstream>
 #include <iomanip>
+#include <thread>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #define SECONDS_IN_DAY 86400;
 using std::cin;
@@ -36,7 +37,6 @@ const int rec_width = 150;
 const int rec_length = 400;
 const int water_bar_length = app_width - 2 * rec_x - 80;
 
-const int watergoal = 16;
 
 // Seven day period for checking valid displayable events
 class day_period_7 : public time_period {
@@ -66,40 +66,33 @@ class Event {
 
 };
 
-bool watercheck(float goal){
-  float hours[] = {12,15,18,21};
-  float increment = goal/4; 
-  float minimumwater[] = {increment, 2*increment, 3*increment, goal};
-  float h,g;
-  string line;
+bool watercheck(float total_water,float watergoal,sf::Text& water_popup_message, int hour){
+  vector<float> hours= {{12},{15},{18},{21}};
+  float increment = watergoal/4; 
+  vector<float> minimumwater = {{increment}, {2*increment}, {3*increment}, {watergoal}};
   vector<string> stringwater;
+  string behind_goal;
+  float behind_goal_val;
 
-  std::time_t time = std::time(NULL);            
-  std::tm now = *std::localtime(&time);
-  h = now.tm_hour;
 
-  ifstream myfile ("water_state.txt");
-  if (myfile.is_open())
-  {
-    while(getline (myfile,line))
-    {
-      stringwater.push_back(line);
-    }
-    myfile.close();
-  }
-
-  g = stof(stringwater.at(0));
-
-  int i =0;
+  int count = 0;
   for (auto test : hours){
-    if (h > test)
-      i++;
+    if (hour> test)
+      count = count + 1;
   }
-  if (g < minimumwater[i])
 
+if(count == 0)
+  return false;
+else if (total_water < minimumwater.at(count-1)){
+    behind_goal_val = minimumwater.at(count-1)-total_water;
+    behind_goal = to_string(behind_goal_val);
+    behind_goal = behind_goal.substr(0,5);
+    behind_goal = "Behind goal by " + behind_goal +" cups";
+    water_popup_message.setString(behind_goal);
     return true;
-  else 
-    return false;
+  }
+else 
+  return false;
 
 }
 
@@ -161,18 +154,11 @@ void create_event(string event_date, string event_time, string event_desc, Event
 
   a.button_spacing = 355 * (float)first_time_as_seconds / SECONDS_IN_DAY // needs to be a percentage of the final calendar box
 
-// creating the button for the calendar event
-  sf::Texture event_texture;
-  if(!event_texture.loadFromFile("Event_background.png")) {
-    cout << "didnt work\n";
-  };
-  event_texture.setSmooth(true);
-
   Button b(event_desc, {a.buttonx, a.buttony}, 10, sf::Color::Black);
   a.b = b;
   a.b.setOutlineColor(sf::Color::Black);
   a.b.setOutlineThickness(1);
-  a.b.setTexture(event_texture);
+ 
 }
 
 bool check_date(string date) {
@@ -197,6 +183,10 @@ bool check_date(string date) {
   year = stoi(dates.at(2));
   if(month < 0 || month > 12)
     return 0;
+  if(month == 4 || month == 6 || month == 9 || month == 11){
+    if (day < 0 || day > 30) //account for the 30 day months
+      return 0;
+  }
   if(day < 0 || day > 31)
     return 0;
   if(year < 2021 || year > 9999)
@@ -278,7 +268,7 @@ bool check_time(string user_time) {
 }
 
 
-void update_water(string w, float& u, float& j) {
+void update_water(string w, float& u, float& j, int watergoal) {
 
   float added_water;
   // check for multiple decimal inputs, return 0 if only decimal or multiples
@@ -413,6 +403,15 @@ string remove_dashes(string remove_dashes) {
   return remove_dashes;
 
 }
+
+/*void check_delete(vector<Event>& calendar, sf::RenderWindow& window){
+  cout<<"yes";
+for(auto e : calendar){
+  if(e.b.isMouseOver(window))
+    cout<<"maybe";
+}
+
+}*/
 int main() {
   int event_count = 0;
   float total_water = (float)0;
@@ -424,10 +423,13 @@ int main() {
   string event_date,
          event_time,
          event_desc;
+  string water_goal_string;
   sf::Text confirm_event_text;
   Event calendar_event;
   vector<Event> calendar;
   string dashed;
+
+  int watergoal = 8;
 
   date local_time(day_clock::local_day()); //get local time to set calendar date
 
@@ -538,6 +540,18 @@ int main() {
   };
   calendar_left.setSmooth(true);
 
+// creating the button for the calendar event
+  sf::Texture event_texture;
+  if(!event_texture.loadFromFile("Event_background.png")) {
+    cout << "didnt work\n";
+  };
+  event_texture.setSmooth(true);
+
+  sf::Texture water_prompt;
+  if(!water_prompt.loadFromFile("enter_water_prompt.png")) {
+    cout << "didnt work\n";
+  };
+  water_prompt.setSmooth(true);
 
 /////////////////////////////////////////////////////////////
   // read in the files here and check which are in period
@@ -545,12 +559,7 @@ int main() {
 
   std::ifstream read_events;
   read_events.open("calendar.txt");
-  /*if (!read_events) {
-      std::cerr << "Error in opening the file" << std::endl;
-      return 1; // if this is main
-  }*/
 
-  /*vector<Event> calendar;*/
   Event cal_event;
   while (read_events >> cal_event.date >> cal_event.time >> cal_event.description) {
     string descrip = remove_dashes(cal_event.description);
@@ -566,6 +575,7 @@ int main() {
       calendar.at(i).in_period = false;
     calendar.at(i).b.setFont(font);
     calendar.at(i).b.setTextFill(sf::Color::Black);
+    calendar.at(i).b.setTexture(event_texture);
   }
 
 
@@ -590,13 +600,10 @@ int main() {
   water_bar_outline.setOutlineColor(sf::Color::Magenta);
   water_bar_outline.setOutlineThickness(2);
 
-
-
 // Water input button
   sf::CircleShape water_button(40);
   water_button.setTexture(&button_texture);
   water_button.setPosition(app_width - rec_x * 2 - 20, rec_length + rec_y + 30);
-
 
 // For the calendar shapes
   vector<sf::RectangleShape> rect_vec;
@@ -605,7 +612,6 @@ int main() {
   rectangle.setOutlineThickness(1);
   rectangle.setPosition(rec_x, rec_y);
   rectangle.setTexture(&paper_texture);
-
 
 // Button to clear the current water count
   Button clear_button("", { 80, 30 }, 15, sf::Color::Black);
@@ -702,20 +708,27 @@ int main() {
   line.setFillColor(sf::Color::Black);
   line.setPosition(180, 670);
 
-// show error by adding a "XX" to the user line
-  /*sf::Text input_error_text;
-  input_error_text.setString("XX");
-  input_error_text.setFillColor(sf::Color::Red);
-  input_error_text.setOutlineColor(sf::Color::Red);
-  input_error_text.setFont(font);
-  input_error_text.setOutlineThickness(1);
-  input_error_text.setPosition(180,640);
-  input_error_text.setCharacterSize(25);*/
-
 // add textbox for user input
   string input_text;
   sf::Text text("", font);
   sf::Clock clock;
+
+// Box to prompt user for water goal
+  sf::RectangleShape water_prompt_box;
+  water_prompt_box.setSize(sf::Vector2f(500,300));
+  water_prompt_box.setTexture(&water_prompt);
+  water_prompt_box.setOutlineThickness(1);
+  water_prompt_box.setPosition(450,200);
+
+// Text user inputs in water prompt goal
+  sf::String water_goal_input;
+  sf::Text water_goal_output;
+  water_goal_output.setPosition(700, 450);
+  water_goal_output.setFillColor(sf::Color::Black);
+  water_goal_output.setFont(font);
+  water_goal_output.setOutlineColor(sf::Color::Black);
+  water_goal_output.setOutlineThickness(1);
+  water_goal_output.setCharacterSize(40);
 
 /// Box to show user what input of water is
   sf::RectangleShape water_box;
@@ -746,10 +759,13 @@ int main() {
   perc_water_text.setFillColor(sf::Color::Blue);
   perc_water_text.setFont(font);
   perc_water_text.setOutlineThickness(0.1);
-  perc_water_text.setPosition(1000, 450);
+  perc_water_text.setPosition(1050, 450);
   perc_water_text.setCharacterSize(20);
-  if(percent_water < 1)
-    perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
+  if(percent_water < 1){
+    string water_string = to_string(percent_water*100);
+    water_string = water_string.substr(0,5);
+    perc_water_text.setString(water_string + " Percent of Goal");
+  }
   else
     perc_water_text.setString("Water Goal Complete!");
 
@@ -758,21 +774,44 @@ int main() {
   popup.setFillColor(sf::Color::Blue);
   popup.setOutlineColor(sf::Color::Black);
 
-
-  sf::Text popup_message;
-  popup_message.setString("DRINK MORE WATER");
-  popup_message.setCharacterSize(30);
-  popup_message.setPosition(1000, 400);
-  popup_message.setFont(font);
-  popup_message.setFillColor(sf::Color::White);
-  popup_message.setOutlineColor(sf::Color::Black);
-  popup_message.setOutlineThickness(0.1);
-
+  sf::Text water_popup_message;
+  water_popup_message.setString("DRINK MORE WATER");
+  water_popup_message.setCharacterSize(20);
+  water_popup_message.setPosition(1000, 400);
+  water_popup_message.setFont(font);
+  water_popup_message.setFillColor(sf::Color::White);
+  water_popup_message.setOutlineColor(sf::Color::Black);
+  water_popup_message.setOutlineThickness(0.1);
 
   Button close("",{30,30}, 0, sf::Color::Red); 
   close.setPosition({810,260});
   close.setTexture(no_add);
 
+  // show user input error for dates and times
+  Button error_popup("", {300, 150}, 0, sf::Color::Black);
+  error_popup.setFillColor(sf::Color::White);
+  error_popup.setOutlineColor(sf::Color::Red);
+  error_popup.setOutlineThickness(5);
+
+  sf::Text input_error_text;
+  input_error_text.setFillColor(sf::Color::Black);
+  input_error_text.setOutlineColor(sf::Color::Red);
+  input_error_text.setFont(font);
+  input_error_text.setOutlineThickness(0.08);
+  input_error_text.setCharacterSize(25);
+
+  Button close_error("",{30,30}, 0, sf::Color::Red); 
+  close_error.setPosition({810,200});
+  close_error.setTexture(no_add);
+
+  // Text to show current water goal
+  sf::Text current_watergoal;
+  current_watergoal.setFillColor(sf::Color::Blue);
+  current_watergoal.setFont(font);
+  current_watergoal.setOutlineThickness(0.1);
+  current_watergoal.setPosition(1050,600);
+  current_watergoal.setCharacterSize(25);
+  current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
 
 // Settings text box
   /*  Textbox settings_textbox(100,sf::Color::Red,1);
@@ -784,13 +823,19 @@ int main() {
   bool disp_text = false;
   bool water_enter = false;
   bool display_settings_box = false;
+  bool water_goal_enter = false;
+  bool display_water_goal = false;
   bool flash_clear_water = false;
   bool enter_event_bool = false;
   bool confirm_event_bool = false;
   bool add_event_bool = false;
   bool increase_by_week = false;
   bool reduce_by_week = false;
-  bool checker;
+  bool checker = false;
+  bool flash_enter_water = false;
+  bool error_bool = false;
+
+/*  bool check_delete_bool = false;*/
 
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
@@ -810,6 +855,7 @@ int main() {
     int h = now.tm_hour;
     int m = now.tm_min;
     int s = now.tm_sec;
+<<<<<<< HEAD
     for (int i=0; i<24; i++){
       if (i==h){
         if (12 == m){
@@ -817,6 +863,12 @@ int main() {
            checker = watercheck(watergoal);
         }
       }
+=======
+    float ms =(float)1/60;
+
+    if (m == 1 & ms == s/(float)60){
+      checker = watercheck(total_water,watergoal,water_popup_message,h);
+>>>>>>> 9617441ffe3d036df22116d170f1f2daeef98761
     }
 
 // Go forward a week
@@ -868,14 +920,14 @@ int main() {
 // Settings butotn
     settings.drawTo(window);
 
-// water button
-    window.draw(water_button);
-
 // water bar outline
     window.draw(water_bar_outline);
 
 // percent shown
     window.draw(perc_water_text);
+
+// water goal shown
+    window.draw(current_watergoal);
 
 // add event button
     event_add.drawTo(window);
@@ -908,6 +960,15 @@ int main() {
       cout << "here\n";
       flash_clear_water = false;
     }
+// water button
+    window.draw(water_button);
+// Flash color on click     
+     if(flash_enter_water) {
+      water_button.setFillColor(sf::Color::Magenta);
+      cout << "here\n";
+      flash_enter_water = false;
+    }
+
 
 // Draw input for event to window
     static sf::Time text_effect_time;
@@ -930,9 +991,11 @@ int main() {
       create_event(event_date, event_time, event_desc, calendar_event);
       calendar.push_back(calendar_event);
       calendar.back().b.setFont(font);
+      calendar.back().b.setTexture(event_texture);
       calendar.back().b.setTextFill(sf::Color::Black);
       if(time_conflict(calendar.back(),calendar)){
-        cout<<"hi";
+        input_error_text.setString("Error! Time Conflict\n Please Try Again");
+        error_bool = true;
         calendar.pop_back();
       }
       else{
@@ -955,9 +1018,22 @@ int main() {
     // Draw forward week/back week
     back_week.drawTo(window);
     forward_week.drawTo(window);
-    /*
-      if(display_settings_box)
-        settings_textbox.drawTo(window);*/
+
+    
+      if(display_settings_box){
+        window.draw(water_prompt_box);
+        sf::FloatRect water_prompt_Bounds = water_prompt_box.getGlobalBounds();
+        sf::FloatRect water_goal_text_Bounds = water_goal_output.getGlobalBounds();
+
+        water_goal_output.setPosition(
+        water_prompt_Bounds.left + (water_prompt_Bounds.width / 2) - (water_goal_text_Bounds.width / 2),
+        water_prompt_Bounds.top + (water_prompt_Bounds.height / 2) - water_goal_text_Bounds.height);
+      }
+
+      // display water goal input
+      if(display_water_goal)
+        window.draw(water_goal_output);
+
     if(confirm_event_bool) {
       confirm_event.drawTo(window);
       yes.drawTo(window);
@@ -971,19 +1047,49 @@ int main() {
       window.draw(confirm_event_text);
     }
 
+    // draw 'drink water' popup
     if (checker){
       popup.centerScreen(window);
       popup.drawTo(window);
       close.drawTo(window);
 
       sf::FloatRect popup_bounds = popup.getGlobalBounds();
-      sf::FloatRect popup_message_bounds = popup_message.getGlobalBounds();
+      sf::FloatRect water_popup_message_bounds = water_popup_message.getGlobalBounds();
 
-      popup_message.setPosition(
-      popup_bounds.left + (popup_bounds.width / 2) - (popup_message_bounds.width / 2),
-      popup_bounds.top + (popup_bounds.height / 2) - popup_message_bounds.height);
-      window.draw(popup_message);
+      water_popup_message.setPosition(
+      popup_bounds.left + (popup_bounds.width / 2) - (water_popup_message_bounds.width / 2),
+      popup_bounds.top + (popup_bounds.height / 2) - water_popup_message_bounds.height);
+      window.draw(water_popup_message);
     }
+
+    // draw error popop when error occurs
+    if (error_bool) {
+      error_popup.centerScreen(window);
+      error_popup.drawTo(window);
+      close_error.drawTo(window);
+
+      sf::FloatRect error_popup_bounds = error_popup.getGlobalBounds();
+      sf::FloatRect input_error_message_bounds = input_error_text.getGlobalBounds();
+
+      input_error_text.setPosition(
+      error_popup_bounds.left + (error_popup_bounds.width / 2) - (input_error_message_bounds.width / 2),
+      error_popup_bounds.top + (error_popup_bounds.height / 2) - input_error_message_bounds.height + 30);
+      window.draw(input_error_text);
+
+    }
+
+/*    if(check_delete_bool){
+      for (int i = 0;i<calendar.size();i++){
+       if( calendar.at(i).b.isMouseOver(window));{
+       sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        sf::FloatRect bounds = calendar.at(i).b.getGlobalBounds();
+          cout<<"why";
+      if (bounds.contains(mouse)) {
+        cout<<"hi";
+     }
+      }
+    }
+  }*/
     // Events
     while(window.pollEvent(event)) {
 
@@ -1010,7 +1116,8 @@ int main() {
                   input_text.clear();
                 } else {
                   input_text.clear();
-
+                  input_error_text.setString("Error! Invalid Date\n Please Try Again");
+                  error_bool = true;
                 }
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
@@ -1037,8 +1144,11 @@ int main() {
                   event_count = event_count + 1;
                   cout << input_text << "\n";
                   input_text.clear();
-                } else
+                } else{
                   input_text.clear();
+                  input_error_text.setString("Error! Invalid Time\n Please Try Again");
+                  error_bool = true;
+                }
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
                 enter_event_bool = false;
@@ -1088,7 +1198,9 @@ int main() {
             cout << water_consumed << "\n";
             water_input += event.text.unicode;
             water_output.setString(water_input);
-            perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
+            string water_string = to_string(percent_water*100);
+            water_string = water_string.substr(0,5);
+            perc_water_text.setString(water_string + " Percent of Goal");
             disp_text = true;
           } else if (event.text.unicode == 13) {
             if(water_consumed.size() == 0) {
@@ -1097,11 +1209,14 @@ int main() {
               water_enter = false;
             }
             if(water_consumed.size() > 0) {
-              update_water(water_consumed, total_water, percent_water);
+              update_water(water_consumed, total_water, percent_water, watergoal);
               water_consumed.clear();
               water_input.clear();
-              if(percent_water < 1)
-                perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
+              if(percent_water < 1){
+                string water_string = to_string(percent_water*100);
+                water_string = water_string.substr(0,5);
+                perc_water_text.setString(water_string + " Percent of Goal");
+              }
               else
                 perc_water_text.setString("Water Goal Complete!");
               display_water_box = false;
@@ -1113,7 +1228,9 @@ int main() {
               water_consumed.pop_back();
               water_input.erase(water_input.getSize() - 1, 1);
               water_output.setString(water_input);
-              perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
+               string water_string = to_string(percent_water*100);
+              water_string = water_string.substr(0,5);
+              perc_water_text.setString(water_string + " Percent of Goal");
             }
           } else if (event.text.unicode == 27) {
             /*                water_input.clear();
@@ -1123,6 +1240,46 @@ int main() {
           }
         }
       }
+
+
+  // water goal entering
+      if (water_goal_enter) {
+         if(event.type == sf::Event::TextEntered) {
+          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+            tmp = static_cast<char>(event.text.unicode);
+            water_goal_string.append(tmp);
+            cout << water_goal_string << "\n";
+            water_goal_input += event.text.unicode;
+            water_goal_output.setString(water_goal_input);
+            display_water_goal = true;
+          } else if (event.text.unicode == 13) {
+            if(water_goal_string.size() == 0) {
+              display_settings_box = false;
+              display_water_goal = false;
+              water_goal_enter = false;
+            }
+            if(water_goal_string.size() > 0) {
+              watergoal = stoi(water_goal_string);
+              current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
+              water_goal_string.clear();
+              water_goal_input.clear();
+  
+          } else if (event.text.unicode == 8) {
+            if(water_goal_string.size() > 0) {
+              water_goal_string.pop_back();
+              water_goal_input.erase(water_goal_input.getSize() - 1, 1);
+              water_goal_output.setString(water_goal_input);
+            }
+          } else if (event.text.unicode == 27) {
+            display_settings_box = false;
+            water_goal_enter = false;
+          }
+        }
+      }
+      }
+
+
+
 /////////////////////////////////////////////////////
 // Check if in water button region
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -1130,10 +1287,12 @@ int main() {
         sf::FloatRect bounds = water_button.getGlobalBounds();
         if (bounds.contains(mouse)) {
           cout << "you are in water enter\n";
+          flash_enter_water = true;
           display_water_box = true;
           water_enter = true;
         }
       }
+
 
 ///////////////////////////////////////////////////////
 
@@ -1150,7 +1309,7 @@ int main() {
           }
         }
       }
-
+      water_button.setFillColor(sf::Color::White);
 ///////////////////////////////////////////////////////
 // Check if in clear water area
       if(clear_button.isMouseOver(window)) {
@@ -1161,10 +1320,12 @@ int main() {
           total_water = 0;
           percent_water = 0; // placeholder for clear button
           if (water_consumed.size() < 1) {
-            update_water("0", total_water, percent_water);
-            perc_water_text.setString(to_string(percent_water * 100) + " Percent of Goal");
+            update_water("0", total_water, percent_water, watergoal);
+            string water_string = to_string(percent_water*100);
+            water_string = water_string.substr(0,5);
+            perc_water_text.setString(water_string + " Percent of Goal");
           } else {
-            update_water(water_consumed, total_water, percent_water);
+            update_water(water_consumed, total_water, percent_water, watergoal);
 
           }
           cout << "You are in water clear button\n";
@@ -1176,16 +1337,15 @@ int main() {
       if(event_add.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           enter_event_bool = true;
-          /*display_settings_box = true;*/
-          /* cout <<"You are in add event\n";*/
-
         }
       }
 
 // Check if in settings area
       if(settings.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          /*display_settings_box = true;*/
+          display_settings_box = true;
+          display_water_goal = true;
+          water_goal_enter = true;
           cout << "You are in settings\n";
 
         }
@@ -1239,11 +1399,23 @@ int main() {
             checker = false;
           }
         }
+      } 
+
+// check is error message is closed
+      if(error_bool){
+        if(close_error.isMouseOver(window)) {
+          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            /*display_settings_box = true;*/
+            cout << "You are in close button\n";
+            error_bool = false;
+          }
+        }
       }
 
+// Close and save the calendar files
       if (event.type == sf::Event::Closed) {
         std::ofstream read_into_calendar("calendar.txt");
-        for (auto event : calendar) { // update the water save file
+        for (auto event : calendar) { 
           dashed = add_dashes(event.description);
           read_into_calendar << event.date << " " << event.time << " " << dashed << "\n";
         }
