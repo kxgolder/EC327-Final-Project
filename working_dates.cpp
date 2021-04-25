@@ -855,21 +855,12 @@ int main() {
     int h = now.tm_hour;
     int m = now.tm_min;
     int s = now.tm_sec;
-<<<<<<< HEAD
-    for (int i=0; i<24; i++){
-      if (i==h){
-        if (12 == m){
-          if (0 == s)
-           checker = watercheck(watergoal);
-        }
-      }
-=======
     float ms =(float)1/60;
 
     if (m == 1 & ms == s/(float)60){
       checker = watercheck(total_water,watergoal,water_popup_message,h);
->>>>>>> 9617441ffe3d036df22116d170f1f2daeef98761
     }
+
 
 // Go forward a week
     if(increase_by_week) {
