@@ -808,11 +808,15 @@ int main() {
     std::time_t time = std::time(NULL);            
     std::tm now = *std::localtime(&time);
     int h = now.tm_hour;
-    int m = now.tm_hour;
+    int m = now.tm_min;
+    int s = now.tm_sec;
     for (int i=0; i<24; i++){
-      if (i==h)
-        if (0 == m)
+      if (i==h){
+        if (12 == m){
+          if (0 == s)
            checker = watercheck(watergoal);
+        }
+      }
     }
 
 // Go forward a week
