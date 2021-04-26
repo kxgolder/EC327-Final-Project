@@ -468,15 +468,14 @@ void getevents(vector<int>* mlocation, vector<int>* dlocation){
 }
 
 
+void save_water_goal(int watergoal){
+  std::ofstream water_goal("water_goal.txt"); // update the water save file
+  water_goal << watergoal;
+  water_goal.close();
 
-/*void check_delete(vector<Event>& calendar, sf::RenderWindow& window){
-  cout<<"yes";
-for(auto e : calendar){
-  if(e.b.isMouseOver(window))
-    cout<<"maybe";
 }
 
-}*/
+
 int main() {
   int event_count = 0;
   float total_water = (float)0;
@@ -493,6 +492,7 @@ int main() {
   Event calendar_event;
   vector<Event> calendar;
   string dashed;
+  string water_goal_string2;
 
   int watergoal = 8;
 
@@ -510,6 +510,19 @@ int main() {
       total_water = total_water + std::stof(load_water);
   }
 
+  // Load in the water goal
+  std::ifstream water_goal_in ("water_goal.txt"); // need a save file for day closed, compare to read in and reset water if different
+  if (water_goal_in.is_open()) {
+    while ( getline (water_goal_in, water_goal_string) ) {
+      /*      cout << load_water;*/
+    }
+    water_goal_in.close();
+    if (water_goal_string.length() >= 1)
+      watergoal = 0 + std::stoi(water_goal_string);
+    else{
+      watergoal = 8;
+    }
+  }
 
 
   percent_water = total_water / watergoal;
@@ -941,7 +954,7 @@ int main() {
     int s = now.tm_sec;
     float ms =(float)1/60;
 
-    if (m == 1 & ms == s/(float)60){
+    if (m == 31 & ms == s/(float)60){
       checker = watercheck(total_water,watergoal,water_popup_message,h);
     }
 
@@ -951,7 +964,7 @@ int main() {
     vector<int> months;
     vector<int> dates;
 
-    if (h == 8 & m == 0 & s == 0){
+    if (h == 21 & m == 28 & s == 0){
       getevents(&months, &dates);
       show_event_count = start_day_reminder(months,dates, &ncount);
      }
@@ -1346,37 +1359,53 @@ int main() {
   // water goal entering
       if (water_goal_enter) {
          if(event.type == sf::Event::TextEntered) {
-          if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
+          if (event.text.unicode > 47 & event.text.unicode < 58) {
             tmp = static_cast<char>(event.text.unicode);
-            water_goal_string.append(tmp);
-            cout << water_goal_string << "\n";
+            water_goal_string2.append(tmp);
+            cout << water_goal_string2 << "\n";
             water_goal_input += event.text.unicode;
             water_goal_output.setString(water_goal_input);
             display_water_goal = true;
           } else if (event.text.unicode == 13) {
-            if(water_goal_string.size() == 0) {
+            if(water_goal_string2.size() == 0) {
               display_settings_box = false;
               display_water_goal = false;
               water_goal_enter = false;
             }
-            if(water_goal_string.size() > 0) {
-              watergoal = stoi(water_goal_string);
+            if(water_goal_string2.size() > 0) {
+              watergoal = stoi(water_goal_string2);
+              water_goal_string = water_goal_string2;
+              update_water("0",total_water,percent_water,watergoal);
+              save_water_goal(watergoal);
               current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
+              if(percent_water < 1){
+                string water_string = to_string(percent_water*100);
+                water_string = water_string.substr(0,5);
+                perc_water_text.setString(water_string + " Percent of Goal");
+              }
+              else
+                perc_water_text.setString("Water Goal Complete!");
               water_goal_string.clear();
+              water_goal_string2.clear();
               water_goal_input.clear();
+              display_settings_box = false;
+              display_water_goal = false;
+              water_goal_enter = false;
   
           } else if (event.text.unicode == 8) {
-            if(water_goal_string.size() > 0) {
-              water_goal_string.pop_back();
+            if(water_goal_string2.size() > 0) {
+              water_goal_string2.pop_back();
               water_goal_input.erase(water_goal_input.getSize() - 1, 1);
               water_goal_output.setString(water_goal_input);
             }
+          }
           } else if (event.text.unicode == 27) {
+            water_goal_string2.clear();
             display_settings_box = false;
+            display_water_goal = false;
             water_goal_enter = false;
           }
         }
-      }
       }
 
 
