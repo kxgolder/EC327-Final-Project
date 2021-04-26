@@ -442,7 +442,6 @@ void getevents(vector<int>* mlocation, vector<int>* dlocation){
   {
     while(getline (read_events,line))
     {
-      cout << line << "\n";
       allevents.push_back(line);
     }
     read_events.close();
@@ -880,20 +879,21 @@ int main() {
   current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
 
   //Button to notify how many events that day
-  Button event_count_reminder("", {300, 150}, 0, sf::Color::Black);
+  Button event_count_reminder("", {400,200}, 0, sf::Color::Black);
   event_count_reminder.setFillColor(sf::Color::White);
   event_count_reminder.setOutlineColor(sf::Color::Black);
+  event_count_reminder.setPosition({500,400});
 
   sf::Text event_popup_message;
   event_popup_message.setCharacterSize(20);
   event_popup_message.setPosition(1000, 400);
   event_popup_message.setFont(font);
-  event_popup_message.setFillColor(sf::Color::White);
+  event_popup_message.setFillColor(sf::Color::Black);
   event_popup_message.setOutlineColor(sf::Color::Black);
   event_popup_message.setOutlineThickness(0.1);
 
   Button close_event_pop("",{30,30}, 0, sf::Color::Red); 
-  close_event_pop.setPosition({810,200});
+  close_event_pop.setPosition({850,440});
   close_event_pop.setTexture(no_add);
 
 // Settings text box
@@ -945,8 +945,8 @@ int main() {
       checker = watercheck(total_water,watergoal,water_popup_message,h);
     }
 
-    // check number of events for the day
-    // check at the start of the day for events
+// check number of events for the day
+// check at the start of the day for events
     int ncount; 
     vector<int> months;
     vector<int> dates;
@@ -954,23 +954,7 @@ int main() {
     if (h == 8 & m == 0 & s == 0){
       getevents(&months, &dates);
       show_event_count = start_day_reminder(months,dates, &ncount);
-    }
-    if (show_event_count){
-      if (ncount > 0){
-        event_popup_message.setString("You have " + to_string(ncount) + " events today!\n Remember to take breaks!");
-        event_count_reminder.centerScreen(window);
-        event_count_reminder.drawTo(window);
-        close_event_pop.drawTo(window);
-
-        sf::FloatRect event_count_reminder_bounds = event_count_reminder.getGlobalBounds();
-        sf::FloatRect event_popup_message_bounds = event_popup_message.getGlobalBounds();
-
-        event_popup_message.setPosition(
-        event_count_reminder_bounds.left + (event_count_reminder_bounds.width / 2) - (event_popup_message_bounds.width / 2),
-        event_count_reminder_bounds.top + (event_count_reminder_bounds.height / 2) - event_popup_message_bounds.height);
-        window.draw(event_popup_message);
-    }
-  }
+     }
 
 // Go forward a week
     if(increase_by_week) {
@@ -1106,6 +1090,22 @@ int main() {
     }
       add_event_bool = false;
     }
+
+    if (show_event_count)
+    {
+    event_popup_message.setString("You have " + to_string(ncount) + " events today!\n Remember to take breaks!");
+    event_count_reminder.drawTo(window);
+    close_event_pop.drawTo(window);
+
+    sf::FloatRect event_count_reminder_bounds = event_count_reminder.getGlobalBounds();
+    sf::FloatRect event_popup_message_bounds = event_popup_message.getGlobalBounds();
+
+    event_popup_message.setPosition(
+    event_count_reminder_bounds.left + (event_count_reminder_bounds.width / 2) - (event_popup_message_bounds.width / 2),
+    event_count_reminder_bounds.top + (event_count_reminder_bounds.height / 2) - event_popup_message_bounds.height);
+    window.draw(event_popup_message);
+    }
+
 // Draw the calendar
     if(calendar.size() > 0) {
       for(auto e : calendar) {
