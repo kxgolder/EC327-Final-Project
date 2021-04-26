@@ -100,6 +100,8 @@ bool watercheck(float total_water, float watergoal, sf::Text& water_popup_messag
 
 // How all events are created and place into the Events class
 void create_event(string event_date, string event_time, string event_desc, Event& a) {
+  string desc;
+  int button_char_size;
 // store the user inputs into the event
   a.date = event_date;
   a.time = event_time;
@@ -157,7 +159,16 @@ void create_event(string event_date, string event_time, string event_desc, Event
 
   a.button_spacing = 355 * (float)first_time_as_seconds / SECONDS_IN_DAY // needs to be a percentage of the final calendar box
 
-                     Button b(event_desc, {a.buttonx, a.buttony}, 10, sf::Color::Black);  // Creates the displayable event
+  if(a.buttony<19){
+    desc = event_desc+ " " + event_time;
+    button_char_size = 8;
+  }
+  else{
+    desc = event_desc +  "\n"+event_time;
+    button_char_size = 10;
+  }
+
+  Button b(desc, {a.buttonx, a.buttony}, button_char_size, sf::Color::Black);
   a.b = b;
   a.b.setOutlineColor(sf::Color::Black);
   a.b.setOutlineThickness(1);
@@ -934,7 +945,7 @@ int main() {
 
 
 ///////////////////////////////////////////
-  window.setFramerateLimit(60);
+  window.setFramerateLimit(30);
 
   while(window.isOpen()) {
     window.clear();
@@ -1373,7 +1384,8 @@ int main() {
                 water_goal_output.setString(water_goal_input);
               }
             }
-          } else if (event.text.unicode == 27) {
+          }
+           else if (event.text.unicode == 27) {
             water_goal_string2.clear();
             water_goal_string.clear();
             water_goal_input.clear();

@@ -76,7 +76,7 @@ sf::FloatRect getGlobalBounds(){
 
     float xPos = (pos.x + button.getGlobalBounds().width / 2) - (text.getGlobalBounds().width / 2);
     float yPos = (pos.y + button.getGlobalBounds().height / 2) - (text.getGlobalBounds().height / 2);
-    text.setPosition(xPos,yPos);
+    text.setPosition(xPos,yPos-2);
   }
 
   void drawTo(sf::RenderWindow &window) {
