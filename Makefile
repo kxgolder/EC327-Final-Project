@@ -18,6 +18,8 @@ another_other: another_other.cpp
 working_dates: working_dates.cpp
 	g++ working_dates.cpp -o w -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
 
+working_datesv2: working_datesv2.cpp
+	g++ working_datesv2.cpp -o v2 -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time
 
 timetry: timetry.cpp
 	g++ timetry.cpp -o t -lsfml-graphics -lsfml-window -lsfml-system -lboost_date_time

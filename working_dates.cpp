@@ -503,7 +503,7 @@ int main() {
   std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
   if (water_in.is_open()) {
     while ( getline (water_in, load_water) ) {
-      /*      cout << load_water;*/
+
     }
     water_in.close();
     if (load_water.size() > 0)
@@ -514,7 +514,7 @@ int main() {
   std::ifstream water_goal_in ("water_goal.txt"); // need a save file for day closed, compare to read in and reset water if different
   if (water_goal_in.is_open()) {
     while ( getline (water_goal_in, water_goal_string) ) {
-      /*      cout << load_water;*/
+
     }
     water_goal_in.close();
     if (water_goal_string.length() >= 1)
@@ -538,96 +538,90 @@ int main() {
   sf::Font font;
   font.loadFromFile("/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf");
 
-  /*sf::Texture wood_background; // Background for weekdays
-  if (!wood_background.loadFromFile("wood.jpg")) {
-    cout << "didnt work\n";
-  };
-  wood_background.setSmooth(true);*/
-
   sf::Texture paper_texture;
   if (!paper_texture.loadFromFile("paper.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   paper_texture.setSmooth(true);
 
   sf::Texture app_background; // Background for app
   if (!app_background.loadFromFile("pastel.jpg")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   app_background.setSmooth(true);
 
   sf::Texture water_texture; // Water progress bar
   if (!water_texture.loadFromFile("water.jpg", sf::IntRect(0, 120, 480, 240))) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   water_texture.setSmooth(true);
 
   sf::Texture button_texture; // Button for water
   if (!button_texture.loadFromFile("button.jpg", sf::IntRect(60, 60, 240, 220))) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   button_texture.setSmooth(true);
 
 
   sf::Texture set_texture; // Button for water
   if (!set_texture.loadFromFile("setting.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   set_texture.setSmooth(true);
 
 // "Icon made by Freeplk from www.flaticon.com"
   sf::Texture plus_event; // Button for water
   if (!plus_event.loadFromFile("plus.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   plus_event.setSmooth(true);
 
   sf::Texture yes_add; // add event
   if (!yes_add.loadFromFile("yes.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   yes_add.setSmooth(true);
 
   sf::Texture no_add; // dont add event
   if (!no_add.loadFromFile("no.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   no_add.setSmooth(true);
 
   sf::Texture reset;
   if (!reset.loadFromFile("reset-button.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   reset.setSmooth(true);
 
   sf::Texture cups_entered;
   if (!cups_entered.loadFromFile("enter_cups.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   cups_entered.setSmooth(true);
 
   sf::Texture calendar_right;
   if (!calendar_right.loadFromFile("moveright.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   calendar_right.setSmooth(true);
 
   sf::Texture calendar_left;
   if (!calendar_left.loadFromFile("moveleft.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   calendar_left.setSmooth(true);
 
 // creating the button for the calendar event
   sf::Texture event_texture;
   if(!event_texture.loadFromFile("Event_background.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   event_texture.setSmooth(true);
 
   sf::Texture water_prompt;
   if(!water_prompt.loadFromFile("enter_water_prompt.png")) {
-    cout << "didnt work\n";
+    cout << "Texture did not load correctly\n";
   };
   water_prompt.setSmooth(true);
 
@@ -964,7 +958,7 @@ int main() {
     vector<int> months;
     vector<int> dates;
 
-    if (h == 21 & m == 28 & s == 0){
+    if (h == 8 & m == 0 & s == 0){
       getevents(&months, &dates);
       show_event_count = start_day_reminder(months,dates, &ncount);
      }
@@ -1055,7 +1049,6 @@ int main() {
     // Flash color on click of clear button
     if(flash_clear_water) {
       clear_button.setFillColor(sf::Color::Magenta);
-      cout << "here\n";
       flash_clear_water = false;
     }
 // water button
@@ -1063,7 +1056,6 @@ int main() {
 // Flash color on click     
      if(flash_enter_water) {
       water_button.setFillColor(sf::Color::Magenta);
-      cout << "here\n";
       flash_enter_water = false;
     }
 
@@ -1192,18 +1184,6 @@ int main() {
 
     }
 
-/*    if(check_delete_bool){
-      for (int i = 0;i<calendar.size();i++){
-       if( calendar.at(i).b.isMouseOver(window));{
-       sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        sf::FloatRect bounds = calendar.at(i).b.getGlobalBounds();
-          cout<<"why";
-      if (bounds.contains(mouse)) {
-        cout<<"hi";
-     }
-      }
-    }
-  }*/
     // Events
     while(window.pollEvent(event)) {
 
@@ -1226,7 +1206,6 @@ int main() {
                 if(check_date(input_text)) {
                   event_date = input_text;
                   event_count = event_count + 1;
-                  cout << input_text << "\n";
                   input_text.clear();
                 } else {
                   input_text.clear();
@@ -1256,7 +1235,6 @@ int main() {
                 if(check_time(input_text)) {
                   event_time = input_text;
                   event_count = event_count + 1;
-                  cout << input_text << "\n";
                   input_text.clear();
                 } else{
                   input_text.clear();
@@ -1284,7 +1262,6 @@ int main() {
               } else if (event.key.code == sf::Keyboard::Return) {
                 event_desc = input_text;
                 event_count = event_count + 1;
-                cout << input_text << "\n";
                 input_text.clear();
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
@@ -1309,7 +1286,6 @@ int main() {
           if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
             tmp = static_cast<char>(event.text.unicode);
             water_consumed.append(tmp);
-            cout << water_consumed << "\n";
             water_input += event.text.unicode;
             water_output.setString(water_input);
             string water_string = to_string(percent_water*100);
@@ -1347,8 +1323,9 @@ int main() {
               perc_water_text.setString(water_string + " Percent of Goal");
             }
           } else if (event.text.unicode == 27) {
-            /*                water_input.clear();
-                            water_consumed.clear();*/
+                            water_input.clear();
+                            water_consumed.clear();
+            disp_text = false;
             display_water_box = false;
             water_enter = false;
           }
@@ -1362,7 +1339,6 @@ int main() {
           if (event.text.unicode > 47 & event.text.unicode < 58) {
             tmp = static_cast<char>(event.text.unicode);
             water_goal_string2.append(tmp);
-            cout << water_goal_string2 << "\n";
             water_goal_input += event.text.unicode;
             water_goal_output.setString(water_goal_input);
             display_water_goal = true;
@@ -1378,6 +1354,9 @@ int main() {
               update_water("0",total_water,percent_water,watergoal);
               save_water_goal(watergoal);
               current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
+               water_goal_string.clear();
+              water_goal_string2.clear();
+              water_goal_input.clear();
               if(percent_water < 1){
                 string water_string = to_string(percent_water*100);
                 water_string = water_string.substr(0,5);
@@ -1385,9 +1364,6 @@ int main() {
               }
               else
                 perc_water_text.setString("Water Goal Complete!");
-              water_goal_string.clear();
-              water_goal_string2.clear();
-              water_goal_input.clear();
               display_settings_box = false;
               display_water_goal = false;
               water_goal_enter = false;
@@ -1401,6 +1377,8 @@ int main() {
           }
           } else if (event.text.unicode == 27) {
             water_goal_string2.clear();
+            water_goal_string.clear();
+            water_goal_input.clear();
             display_settings_box = false;
             display_water_goal = false;
             water_goal_enter = false;
@@ -1416,7 +1394,6 @@ int main() {
         sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::FloatRect bounds = water_button.getGlobalBounds();
         if (bounds.contains(mouse)) {
-          cout << "you are in water enter\n";
           flash_enter_water = true;
           display_water_box = true;
           water_enter = true;
@@ -1432,7 +1409,6 @@ int main() {
           sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
           sf::FloatRect bounds = water_box.getGlobalBounds();
           if (bounds.contains(mouse)) {
-            cout << "you are in water pop up\n";
             display_water_box = false;
             water_enter = false;
 
@@ -1458,7 +1434,6 @@ int main() {
             update_water(water_consumed, total_water, percent_water, watergoal);
 
           }
-          cout << "You are in water clear button\n";
 
         }
       }
@@ -1476,7 +1451,6 @@ int main() {
           display_settings_box = true;
           display_water_goal = true;
           water_goal_enter = true;
-          cout << "You are in settings\n";
 
         }
       }
@@ -1485,11 +1459,9 @@ int main() {
       if(yes.isMouseOver(window)) {
         event_add.setFillColor(sf::Color::Magenta);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          /*display_settings_box = true;*/
           enter_event_bool = false;
           confirm_event_bool = false;
           add_event_bool = true;
-          cout << "You are in add button\n";
 
         }
       }
@@ -1498,8 +1470,6 @@ int main() {
     if(confirm_event_bool){
       if(no.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          /*display_settings_box = true;*/
-          cout << "You are in no button\n";
           enter_event_bool = false;
           confirm_event_bool = false;
         }
@@ -1508,14 +1478,12 @@ int main() {
 // Check if in go forward a week region
       if(forward_week.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          cout << "You are in forward_week button\n";
           increase_by_week = true;
         }
       }
 // Check if in go back a week region
       if(back_week.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          cout << "You are in back_week button\n";
           reduce_by_week = true;
         }
       } 
@@ -1524,8 +1492,6 @@ int main() {
       if(checker){
         if(close.isMouseOver(window)) {
           if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            /*display_settings_box = true;*/
-            cout << "You are in close button\n";
             checker = false;
           }
         }
@@ -1535,8 +1501,6 @@ int main() {
       if(show_event_count){
         if(close_event_pop.isMouseOver(window)) {
           if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            /*display_settings_box = true;*/
-            cout << "You are in close button\n";
           show_event_count = false;
           }
         }
@@ -1546,8 +1510,6 @@ int main() {
       if(error_bool){
         if(close_error.isMouseOver(window)) {
           if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            /*display_settings_box = true;*/
-            cout << "You are in close button\n";
             error_bool = false;
           }
         }
