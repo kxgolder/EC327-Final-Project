@@ -47,6 +47,7 @@ class day_period_7 : public time_period {
 
 };
 
+// Class that stores all relevant information for the calendar events
 class Event {
  public:
   string date,
@@ -60,12 +61,12 @@ class Event {
 
   int start_time;
   int end_time;
-// placeholder, difference between time/24
   Button b;
-  bool in_period;
+  bool in_period; 
 
 };
 
+// Periodically checks if the user is on track to meet their water goals 
 bool watercheck(float total_water,float watergoal,sf::Text& water_popup_message, int hour){
   vector<float> hours= {{12},{15},{18},{21}};
   float increment = watergoal/4; 
@@ -81,12 +82,14 @@ bool watercheck(float total_water,float watergoal,sf::Text& water_popup_message,
       count = count + 1;
   }
 
+// Checks to see how far behind you are the water goal and
+// updates the string displayed to the users screen as a reminder
 if(count == 0)
   return false;
 else if (total_water < minimumwater.at(count-1)){
     behind_goal_val = minimumwater.at(count-1)-total_water;
     behind_goal = to_string(behind_goal_val);
-    behind_goal = behind_goal.substr(0,5);
+    behind_goal = behind_goal.substr(0,4);
     behind_goal = "Behind goal by " + behind_goal +" cups";
     water_popup_message.setString(behind_goal);
     return true;
@@ -96,6 +99,7 @@ else
 
 }
 
+// How all events are created and place into the Events class
 void create_event(string event_date, string event_time, string event_desc, Event& a) {
 // store the user inputs into the event
   a.date = event_date;
@@ -110,7 +114,7 @@ void create_event(string event_date, string event_time, string event_desc, Event
 
   stringstream split_date(event_date);
 
-  while(split_date.good()) {
+  while(split_date.good()) {  // Splitting the date into its parts, rearranging for use with the boost library
     string d;
     getline(split_date, d, '/');
     dates.push_back(d);
@@ -125,7 +129,7 @@ void create_event(string event_date, string event_time, string event_desc, Event
 
   stringstream split_time(event_time);
 
-  while(split_time.good()) {
+  while(split_time.good()) {  // Splitting the time to represent start and end times as seconds since 00:00
     string d;
     getline(split_time, d, '-');
     times.push_back(d);
@@ -154,13 +158,14 @@ void create_event(string event_date, string event_time, string event_desc, Event
 
   a.button_spacing = 355 * (float)first_time_as_seconds / SECONDS_IN_DAY // needs to be a percentage of the final calendar box
 
-  Button b(event_desc, {a.buttonx, a.buttony}, 10, sf::Color::Black);
+  Button b(event_desc, {a.buttonx, a.buttony}, 10, sf::Color::Black);  // Creates the displayable event
   a.b = b;
   a.b.setOutlineColor(sf::Color::Black);
   a.b.setOutlineThickness(1);
  
 }
 
+// Function simply checks if the user has input a valid date date, takes into account leap years
 bool check_date(string date) {
   int month,
       day,
@@ -172,7 +177,7 @@ bool check_date(string date) {
 
   stringstream split_date(date);
 
-  while(split_date.good()) {
+  while(split_date.good()) {  // Split date into day month and year
     string d;
     getline(split_date, d, '/');
     dates.push_back(d);
@@ -194,31 +199,32 @@ bool check_date(string date) {
 
   leapyear = gregorian_calendar::is_leap_year(year);
 
-  if(!leapyear & month == 2 & day > 28) // could have a thing that says leap year
+  if(!leapyear & month == 2 & day > 28) 
     return 0;
 
   return 1;
 }
 
 
-// function to remoove spaces
+// Function to remove spaces
 string removeSpaces(string str) {
   str.erase(remove(str.begin(), str.end(), ' '), str.end());
   return str;
 }
 
+// Function to remove dashes
 string removeDashes(string str) {
   str.erase(remove(str.begin(), str.end(), '-'), str.end());
   return str;
 }
 
-//function to check time input
+// Function to check if time input is valid
 bool check_time(string user_time) {
   vector<string> vec, vec_first, vec_second;
   stringstream ss(user_time);
   string line;
   // split string at '-'
-  while(std::getline(ss, line, '-')) {
+  while(std::getline(ss, line, '-')) {  // Split the time into its hours and minutes
     vec.push_back(line);
   }
   // check there is a start and end time
@@ -235,18 +241,18 @@ bool check_time(string user_time) {
     vec_first.push_back(line);
   }
 
-  // make sure there is an hour and min input
+  // Making sure there is an hour and min input
   if (vec_first.size() != 2)
     return 0;
   first_hour = stoi(vec_first.at(0));
   first_min = stoi(vec_first.at(1));
-  // check appropiate input
+  // Checking appropiate input
   if (first_hour < 0 || first_hour > 23)
     return 0;
   if (first_min < 0 || first_min > 59)
     return 0;
 
-  // do the same thing to end time
+  // Repeating for the end time
   stringstream ss2(second);
   while(std::getline(ss2, line, ':')) {
     vec_second.push_back(line);
@@ -260,14 +266,14 @@ bool check_time(string user_time) {
   if (second_min < 0 || second_min > 59)
     return 0;
 
-// check that the start time is before end time
+// Check that the start time is before end time
   if (first_hour > second_hour)
     return 0;
 
   return 1;
 }
 
-
+// Function updates the current water intake, stores the value externally so its remembered on close
 void update_water(string w, float& u, float& j, int watergoal) {
 
   float added_water;
@@ -315,7 +321,7 @@ bool check_in_period_by_day(boost::gregorian::date local_time, date d, int i) {
   return 0;
 }
 
-// Check if newly added event conflicts
+// Check if newly added event conflicts with previous events
 bool time_conflict(Event checking,vector<Event> calendar){
 
 if(calendar.size() == 1)
@@ -331,7 +337,7 @@ for(int i = 0;i<calendar.size()-1;i++){
 return 0;
 
 }
-// For setting the current calendar date
+// Function for setting the current calendar date, adjusts based on the local time
 vector<string> set_calendar_date(boost::gregorian::date local_time) {
   vector<string> times;
   for (int i = -1; i < 6; i++) {
@@ -341,9 +347,9 @@ vector<string> set_calendar_date(boost::gregorian::date local_time) {
   }
   return times;
 }
-/// for moving the calendar forward or backwards a week
+// Function for moving the calendar forward or backwards a week
 void set_calendar_date(boost::gregorian::date local_time, vector<string>& days, vector<sf::Text>& day){
-    for (int i = -1; i < 6; i++) {
+    for (int i = -1; i < 6; i++) {  // Getting the month value as well as the numeric day in that month for the given time period
     ptime t(local_time, hours(24) * (i + 1));
     string s = to_simple_string(t);
     days.at(i+1) = (s.substr(5, 3) + " " + to_string(stoi(s.substr(9))));
@@ -357,7 +363,7 @@ void set_calendar_date(boost::gregorian::date local_time, vector<string>& days, 
       day_text.setOutlineThickness(1);
       day_text.setPosition(day_x, day_y);
 
-      int x = day_x + 50; // spacing on these needs to be calculated
+      int x = day_x + 50; 
       for (int i = 0; i < days.size(); i++) {
         day.push_back(day_text);
         day.at(i).setPosition(x - 65, day_y);
@@ -366,6 +372,7 @@ void set_calendar_date(boost::gregorian::date local_time, vector<string>& days, 
       }
 }
 
+// Function checks the input event to see if its in the 7 day period being displayed, correctly spaces the event boxes accordingly
 void please_give_position(date local_time, boost::gregorian::date d, Event& calendar_event) {
 
   if(check_in_period_by_day(local_time, calendar_event.d, 0))
@@ -385,6 +392,7 @@ void please_give_position(date local_time, boost::gregorian::date d, Event& cale
 
 }
 
+// Function adds dashes, used when storing the event description in external file for easier file input
 string add_dashes(string desc) {
   for(int i = 0; i < desc.length(); i++) {
     if (desc.at(i) == ' ')
@@ -394,6 +402,7 @@ string add_dashes(string desc) {
 
 }
 
+// Function removes the dashes from the event description in put on open, stores them for use by the event class
 string remove_dashes(string remove_dashes) {
 
   for(int i = 0; i < remove_dashes.length(); i++) {
@@ -404,7 +413,7 @@ string remove_dashes(string remove_dashes) {
 
 }
 
-// checks how many events there are that day
+// Function checks how many events there are on the given day
 bool start_day_reminder(vector<int> months, vector<int> dates, int* count){
   std::time_t time = std::time(NULL);            
   std::tm now = *std::localtime(&time);
@@ -426,7 +435,7 @@ bool start_day_reminder(vector<int> months, vector<int> dates, int* count){
   else return false;
   }
 
-// function to format calander events
+// Function to format calander events
 void getevents(vector<int>* mlocation, vector<int>* dlocation){
   vector<string> allevents;
   string line;
@@ -467,7 +476,7 @@ void getevents(vector<int>* mlocation, vector<int>* dlocation){
   *dlocation = dates;
 }
 
-
+// Stores the current water goal so that it persists on app close
 void save_water_goal(int watergoal){
   std::ofstream water_goal("water_goal.txt"); // update the water save file
   water_goal << watergoal;
@@ -493,14 +502,13 @@ int main() {
   vector<Event> calendar;
   string dashed;
   string water_goal_string2;
+  int watergoal = 8; // Initial water goal, gets updated based on user preference
 
-  int watergoal = 8;
-
-  date local_time(day_clock::local_day()); //get local time to set calendar date
+  date local_time(day_clock::local_day()); // Get local time to set calendar date
 
 
   // Load in the state of water
-  std::ifstream water_in ("water_state.txt"); // need a save file for day closed, compare to read in and reset water if different
+  std::ifstream water_in ("water_state.txt"); 
   if (water_in.is_open()) {
     while ( getline (water_in, load_water) ) {
 
@@ -511,7 +519,7 @@ int main() {
   }
 
   // Load in the water goal
-  std::ifstream water_goal_in ("water_goal.txt"); // need a save file for day closed, compare to read in and reset water if different
+  std::ifstream water_goal_in ("water_goal.txt"); 
   if (water_goal_in.is_open()) {
     while ( getline (water_goal_in, water_goal_string) ) {
 
@@ -524,7 +532,7 @@ int main() {
     }
   }
 
-
+// Determining the initial state of progress towards water goal
   percent_water = total_water / watergoal;
 
 
@@ -576,12 +584,14 @@ int main() {
   };
   plus_event.setSmooth(true);
 
+// "Icon made by Freeplk from www.flaticon.com"
   sf::Texture yes_add; // add event
   if (!yes_add.loadFromFile("yes.png")) {
     cout << "Texture did not load correctly\n";
   };
   yes_add.setSmooth(true);
 
+// "Icon made by Freeplk from www.flaticon.com"
   sf::Texture no_add; // dont add event
   if (!no_add.loadFromFile("no.png")) {
     cout << "Texture did not load correctly\n";
@@ -600,12 +610,14 @@ int main() {
   };
   cups_entered.setSmooth(true);
 
+// "Icon made by Freeplk from www.flaticon.com"
   sf::Texture calendar_right;
   if (!calendar_right.loadFromFile("moveright.png")) {
     cout << "Texture did not load correctly\n";
   };
   calendar_right.setSmooth(true);
 
+// "Icon made by Freeplk from www.flaticon.com"
   sf::Texture calendar_left;
   if (!calendar_left.loadFromFile("moveleft.png")) {
     cout << "Texture did not load correctly\n";
@@ -626,7 +638,7 @@ int main() {
   water_prompt.setSmooth(true);
 
 /////////////////////////////////////////////////////////////
-  // read in the files here and check which are in period
+  // Reading in the calendar events and checking which are in the displayed period
 
 
   std::ifstream read_events;
@@ -677,7 +689,7 @@ int main() {
   water_button.setTexture(&button_texture);
   water_button.setPosition(app_width - rec_x * 2 - 20, rec_length + rec_y + 30);
 
-// For the calendar shapes
+// Calendar shapes
   vector<sf::RectangleShape> rect_vec;
   sf::RectangleShape rectangle;
   rectangle.setSize(sf::Vector2f(rec_width, rec_length));
@@ -702,7 +714,7 @@ int main() {
   back_week.setPosition({10,50});
   back_week.setTexture(calendar_left);
 
-// Setting buttons
+// Settings button
   Button settings("", {100, 100}, 0, sf::Color::Black);
   settings.setFont(font);
   settings.setTexture(set_texture);
@@ -713,18 +725,18 @@ int main() {
   confirm_event.setFont(font);
   confirm_event.centerScreen(window);
 
-// Event plus button
+// Event add button
   Button event_add("", {50, 50}, 0, sf::Color::Black);
   event_add.setTexture(plus_event);
   event_add.setFillColor(sf::Color::White);
   event_add.setPosition({90, 600});
 
-// confirm event yes
+// Confirm event yes
   Button yes("", {50, 50}, 0, sf::Color::Black);
   yes.setTexture(yes_add);
   yes.setPosition({550, 250});
 
-// confirm event no
+// Confirm event no
   Button no("", {50, 50}, 0, sf::Color::Black);
   no.setTexture(no_add);
   no.setPosition({800, 250});
@@ -733,7 +745,7 @@ int main() {
   vector<string> days = set_calendar_date(local_time);
   vector<sf::Text> day;
 
-// First day to copy
+// First day to copy for the calendar names
   int day_x = rec_x + 50;
   int day_y = 50;
   sf::Text day_text;
@@ -744,7 +756,7 @@ int main() {
   day_text.setOutlineThickness(1);
   day_text.setPosition(day_x, day_y);
 
-  int x = day_x + 50; // spacing on these needs to be calculated
+  int x = day_x + 50; 
   for (int i = 0; i < days.size(); i++) {
     day.push_back(day_text);
     day.at(i).setPosition(x - 65, day_y);
@@ -760,7 +772,7 @@ int main() {
     a = a + rec_width + (float)350 / calendar_spaces;
   }
 
-// create directions to add event
+// Directions to add event
   sf::Text add_event;
   add_event.setFont(font);
   add_event.setString("Add Event: Enter Day, Time with minutes in 24-hour time, and Event in the Textbox below, separated by the RETURN key");
@@ -774,13 +786,13 @@ int main() {
   add_info.setFillColor(sf::Color::Black);
   add_info.setPosition(180, 600);
 
-// add line under user input
+// Line under user input
   sf::RectangleShape line(sf::Vector2f(800, 2));
   line.setOutlineColor(sf::Color::Black);
   line.setFillColor(sf::Color::Black);
   line.setPosition(180, 670);
 
-// add textbox for user input
+// Textbox for the users input
   string input_text;
   sf::Text text("", font);
   sf::Clock clock;
@@ -802,7 +814,7 @@ int main() {
   water_goal_output.setOutlineThickness(1);
   water_goal_output.setCharacterSize(40);
 
-/// Box to show user what input of water is
+/// Box to show user what input of water consumed
   sf::RectangleShape water_box;
   water_box.setSize(sf::Vector2f(200, 150));
   water_box.setTexture(&cups_entered);
@@ -841,7 +853,7 @@ int main() {
   else
     perc_water_text.setString("Water Goal Complete!");
 
-// set water popup
+// Water popup
   Button popup("", {300, 100}, 0, sf::Color::Black);
   popup.setFillColor(sf::Color::Blue);
   popup.setOutlineColor(sf::Color::Black);
@@ -855,11 +867,12 @@ int main() {
   water_popup_message.setOutlineColor(sf::Color::Black);
   water_popup_message.setOutlineThickness(0.1);
 
+  // Button to close the water popup
   Button close("",{30,30}, 0, sf::Color::Red); 
   close.setPosition({810,260});
   close.setTexture(no_add);
 
-  // show user input error for dates and times
+  // Display an error message for incorrect user input on date or time
   Button error_popup("", {300, 150}, 0, sf::Color::Black);
   error_popup.setFillColor(sf::Color::White);
   error_popup.setOutlineColor(sf::Color::Red);
@@ -885,12 +898,13 @@ int main() {
   current_watergoal.setCharacterSize(25);
   current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
 
-  //Button to notify how many events that day
+  //Button to notify how many events are occuring on the current day
   Button event_count_reminder("", {400,200}, 0, sf::Color::Black);
   event_count_reminder.setFillColor(sf::Color::White);
   event_count_reminder.setOutlineColor(sf::Color::Black);
   event_count_reminder.setPosition({500,400});
 
+// Text for the event popup
   sf::Text event_popup_message;
   event_popup_message.setCharacterSize(20);
   event_popup_message.setPosition(1000, 400);
@@ -899,16 +913,14 @@ int main() {
   event_popup_message.setOutlineColor(sf::Color::Black);
   event_popup_message.setOutlineThickness(0.1);
 
+// Button to close the event popup
   Button close_event_pop("",{30,30}, 0, sf::Color::Red); 
   close_event_pop.setPosition({850,440});
   close_event_pop.setTexture(no_add);
 
-// Settings text box
-  /*  Textbox settings_textbox(100,sf::Color::Red,1);
-    settings_textbox.setFont(font);
-    settings_textbox.setPosition({700,700});*/
 // DISPLAY BOOLEANS
 //////////////////////////////////////
+  // Controls for where user input should be directed, as well as when shapes should be displayed
   bool display_water_box = false;
   bool disp_text = false;
   bool water_enter = false;
@@ -926,21 +938,20 @@ int main() {
   bool error_bool = false;
   bool show_event_count = false;
 
-/*  bool check_delete_bool = false;*/
 
 ///////////////////////////////////////////
   window.setFramerateLimit(60);
 
   while(window.isOpen()) {
-
+  window.clear();
     sf::Event event;
-    if(total_water >= 0) { // moving progress bar; needs a timer to look nice; could have count to check days you've met goal;
+    if(total_water >= 0) { // moving progress bar for water goal
       if(total_water >= watergoal)
         water_bar.setSize(sf::Vector2f(water_bar_length, 50));
       else
         water_bar.setSize(sf::Vector2f(percent_water * water_bar_length, 50));
     }
-// check perioodic water level
+// Checking the users water intake periodically, reminding them if they are behind schedule
     std::time_t time = std::time(NULL);            
     std::tm now = *std::localtime(&time);
     int h = now.tm_hour;
@@ -948,12 +959,11 @@ int main() {
     int s = now.tm_sec;
     float ms =(float)1/60;
 
-    if (m == 31 & ms == s/(float)60){
+    if (m == 1 & s == 0){
       checker = watercheck(total_water,watergoal,water_popup_message,h);
     }
 
-// check number of events for the day
-// check at the start of the day for events
+// Checking number of events for the day
     int ncount; 
     vector<int> months;
     vector<int> dates;
@@ -963,7 +973,7 @@ int main() {
       show_event_count = start_day_reminder(months,dates, &ncount);
      }
 
-// Go forward a week
+// Makes the calendar display the next weeks dates and events
     if(increase_by_week) {
       local_time = local_time + weeks(1);
       set_calendar_date(local_time,days,day);
@@ -977,7 +987,8 @@ int main() {
         calendar.at(i).b.setTextFill(sf::Color::Black);
       }
     }
-// Go back a week
+
+// Makes the calendar display the previous weeks dates and events
     if(reduce_by_week) {
       local_time = local_time - weeks(1);
       set_calendar_date(local_time,days,day);
@@ -994,38 +1005,37 @@ int main() {
 
 //DRAWING SHAPES
 ///////////////////////////////////////////////////
-    /*    window.draw(confirm_event);*/
-// background image
+
+// Background image
     window.draw(background);
     window.draw(water_bar); // need to link this to the water input, cover up watergoal-remaining for a progress bar
 
-// Draw the boxes
+// Drawing the calendar boxes
     window.draw(rectangle);
     for (int i = 0; i < rect_vec.size(); i++)
       window.draw(rect_vec.at(i));
 
-// Draw the names
+// Drawing the dates
     /*    window.draw(day_text);*/
     for (int i = 0; i < day.size(); i++)
       window.draw(day.at(i));
 
-// Settings butotn
+// Settings button
     settings.drawTo(window);
 
-// water bar outline
+// Water bar outline
     window.draw(water_bar_outline);
 
-// percent shown
+// Percent of water goal
     window.draw(perc_water_text);
 
-// water goal shown
+// Water goal 
     window.draw(current_watergoal);
 
-// add event button
+// Add event button
     event_add.drawTo(window);
-    /*event_add_back.drawTo(window);*/
 
-// draw text: add_event & boxes
+// Draw text: add_event & boxes
     window.draw(add_event);
     window.draw(add_info);
     window.draw(line);
@@ -1044,24 +1054,24 @@ int main() {
     if(disp_text)
       window.draw(water_output);
 
-    // clear button
+    // Clear button
     clear_button.drawTo(window);
+
     // Flash color on click of clear button
     if(flash_clear_water) {
       clear_button.setFillColor(sf::Color::Magenta);
       flash_clear_water = false;
     }
-// water button
+// Water button
     window.draw(water_button);
-// Flash color on click     
+// Flash color on click of water button  
      if(flash_enter_water) {
       water_button.setFillColor(sf::Color::Magenta);
       flash_enter_water = false;
     }
 
-
 // Draw input for event to window
-    static sf::Time text_effect_time;
+    static sf::Time text_effect_time;  // Used to flash a cursor under the users text inputs
     static bool show_cursor;
 
     text_effect_time += clock.restart();
@@ -1077,7 +1087,7 @@ int main() {
       text.setFillColor(sf::Color::Blue);
     }
 
-    if(add_event_bool) {
+    if(add_event_bool) { // Takes users input and creates a corresponding event, error checks for valid date and time
       create_event(event_date, event_time, event_desc, calendar_event);
       calendar.push_back(calendar_event);
       calendar.back().b.setFont(font);
@@ -1096,7 +1106,7 @@ int main() {
       add_event_bool = false;
     }
 
-    if (show_event_count)
+    if (show_event_count)  
     {
     event_popup_message.setString("You have " + to_string(ncount) + " events today!\n Remember to take breaks!");
     event_count_reminder.drawTo(window);
@@ -1125,7 +1135,7 @@ int main() {
     back_week.drawTo(window);
     forward_week.drawTo(window);
 
-    
+    // Displaying the settings box
       if(display_settings_box){
         window.draw(water_prompt_box);
         sf::FloatRect water_prompt_Bounds = water_prompt_box.getGlobalBounds();
@@ -1140,6 +1150,7 @@ int main() {
       if(display_water_goal)
         window.draw(water_goal_output);
 
+// Displaying the confirm event box
     if(confirm_event_bool) {
       confirm_event.drawTo(window);
       yes.drawTo(window);
@@ -1153,7 +1164,7 @@ int main() {
       window.draw(confirm_event_text);
     }
 
-    // draw 'drink water' popup
+    // Displaying the 'drink water' popup
     if (checker){
       popup.centerScreen(window);
       popup.drawTo(window);
@@ -1168,7 +1179,7 @@ int main() {
       window.draw(water_popup_message);
     }
 
-    // draw error popop when error occurs
+    // Displaying an error popop when an error occurs
     if (error_bool) {
       error_popup.centerScreen(window);
       error_popup.drawTo(window);
@@ -1187,10 +1198,7 @@ int main() {
     // Events
     while(window.pollEvent(event)) {
 
-
-
-      //// code for textbox // //timer for after an invalid input that prints out a box saying "invalid input"
-      if(enter_event_bool) {
+      if(enter_event_bool) {  // Used to take in user events, blocks invalid text entrys for date and time
         if(!water_enter) {
           if (event_count == 0) {
             if (event.type == sf::Event::TextEntered) {
@@ -1252,7 +1260,7 @@ int main() {
           else if (event_count == 2) {
             if (event.type == sf::Event::TextEntered) {
               if (std::isprint(event.text.unicode)) {
-                if(input_text.length() < 18) // keep the box containing text
+                if(input_text.length() < 18) 
                   input_text += event.text.unicode;
               }
             } else if (event.type == sf::Event::KeyPressed) {
@@ -1280,7 +1288,7 @@ int main() {
         }
       }
 /////////////////////////////////////////////////////////////////////
-      // escape to close water/ general close everything
+      // Takes in the users water input, blocks non-numeric entry other than decimal points
       if(water_enter) {
         if(event.type == sf::Event::TextEntered) {
           if (event.text.unicode > 47 & event.text.unicode < 58 | event.text.unicode == 46) {
@@ -1333,7 +1341,7 @@ int main() {
       }
 
 
-  // water goal entering
+  // Used to update the users daily water goal
       if (water_goal_enter) {
          if(event.type == sf::Event::TextEntered) {
           if (event.text.unicode > 47 & event.text.unicode < 58) {
@@ -1387,9 +1395,9 @@ int main() {
       }
 
 
+// CHECKING MOUSE POSITION/MOUSE CLICKS ON SHAPES
 
-/////////////////////////////////////////////////////
-// Check if in water button region
+// Check if in the water button region
       if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         sf::FloatRect bounds = water_button.getGlobalBounds();
@@ -1401,9 +1409,7 @@ int main() {
       }
 
 
-///////////////////////////////////////////////////////
-
-// check if in pop-up
+// check if in the water entry pop-up
       if(water_enter) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -1416,7 +1422,7 @@ int main() {
         }
       }
       water_button.setFillColor(sf::Color::White);
-///////////////////////////////////////////////////////
+
 // Check if in clear water area
       if(clear_button.isMouseOver(window)) {
         clear_button.setFillColor(sf::Color::Magenta);
@@ -1438,6 +1444,7 @@ int main() {
         }
       }
       clear_button.setFillColor(sf::Color::White);
+
 // Check if in add event area
       if(event_add.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -1454,6 +1461,7 @@ int main() {
 
         }
       }
+
 // Check if in add event button
     if(confirm_event_bool){
       if(yes.isMouseOver(window)) {
@@ -1466,7 +1474,8 @@ int main() {
         }
       }
     }
-// Check if in don't add event
+
+// Check if in do not add event
     if(confirm_event_bool){
       if(no.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -1475,12 +1484,14 @@ int main() {
         }
       }
     }
+
 // Check if in go forward a week region
       if(forward_week.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
           increase_by_week = true;
         }
       }
+
 // Check if in go back a week region
       if(back_week.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -1522,7 +1533,7 @@ int main() {
           dashed = add_dashes(event.description);
           read_into_calendar << event.date << " " << event.time << " " << dashed << "\n";
         }
-        window.close(); // close
+        window.close();
       }
 
     }
@@ -1535,14 +1546,3 @@ int main() {
   return 0;
 }
 
-
-
-
-
-
-/*        read_into_calendar.close();
-        std::ofstream read_into_calendar_desc("description.txt");
-        for (auto event:calendar){ // update the water save file
-          read_into_calendar << event.description<<"\n";
-        }
-        read_into_calendar_desc.close(); */
