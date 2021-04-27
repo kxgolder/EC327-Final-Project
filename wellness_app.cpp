@@ -1421,7 +1421,6 @@ int main() {
               water_output.setString(water_input);
               string water_string = to_string(percent_water * 100);
               water_string = water_string.substr(0, 5);
-              perc_water_text.setString(water_string + " Percent of Goal");
             }
           } else if (event.text.unicode == 27) {
             water_input.clear();
