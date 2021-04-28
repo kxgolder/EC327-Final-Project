@@ -168,10 +168,10 @@ bool check_date(string date) {
   bool leapyear;
   string line;
 
-  if(date == "/" | date == "//" |date == "///"|date == "////"|
-    date == "////"|date == "/////"|date == "//////"|date == "///////"|
-    date == "////////"|date == "/////////"|date == "//////////"|date == "///////////"|
-    date.length() == 0){
+  if(date == "/" | date == "//" | date == "///" | date == "////" |
+      date == "////" | date == "/////" | date == "//////" | date == "///////" |
+      date == "////////" | date == "/////////" | date == "//////////" | date == "///////////" |
+      date.length() == 0) {
     return 0;
   }
 
@@ -181,21 +181,21 @@ bool check_date(string date) {
   while(std::getline(split_date, line, '/')) {  // Split the time into its hours and minutes
     dates.push_back(line);
   }
-/*  while(split_date.good()) {  // Split date into day month and year
-    string d;
-    getline(split_date, d, '/');
-    dates.push_back(d);
-  }*/
+  /*  while(split_date.good()) {  // Split date into day month and year
+      string d;
+      getline(split_date, d, '/');
+      dates.push_back(d);
+    }*/
 
   if(dates.size() != 3)
     return 0;
 
- for(int i = 0;i<dates.size();i++){
-  for(int j = 0;j<dates.at(i).length();j++){
-    if(!isdigit(dates.at(i).at(j)))
-      return 0;
+  for(int i = 0; i < dates.size(); i++) {
+    for(int j = 0; j < dates.at(i).length(); j++) {
+      if(!isdigit(dates.at(i).at(j)))
+        return 0;
+    }
   }
-}
   month = stoi(dates.at(0));
   day = stoi(dates.at(1));
   year = stoi(dates.at(2));
@@ -1284,7 +1284,7 @@ int main() {
     // Events
     while(window.pollEvent(event)) {
 
-      if(enter_event_bool) {  // Used to take in user events, blocks invalid text entrys for date and time
+      if(enter_event_bool) {
         if(!water_enter) {
           if (event_count == 0) {
             if (event.type == sf::Event::TextEntered) {
@@ -1297,7 +1297,7 @@ int main() {
                 if (!input_text.empty())
                   input_text.pop_back();
               } else if (event.key.code == sf::Keyboard::Return) {
-                if(input_text.size()>7){
+                if(input_text.size() > 7) {
                   if(check_date(input_text)) {
                     event_date = input_text;
                     event_count = event_count + 1;
@@ -1307,12 +1307,11 @@ int main() {
                     input_error_text.setString("Error! Invalid Date\n Please Try Again");
                     error_bool = true;
                   }
+                } else {
+                  input_text.clear();
+                  input_error_text.setString("Error! Invalid Date\n Please Try Again");
+                  error_bool = true;
                 }
-                else{
-                    input_text.clear();
-                    input_error_text.setString("Error! Invalid Date\n Please Try Again");
-                    error_bool = true;
-                  }
               } else if (event.key.code == sf::Keyboard::Escape) {
                 input_text.clear();
                 enter_event_bool = false;
@@ -1451,217 +1450,248 @@ int main() {
               water_goal_enter = false;
             }
             if(water_goal_string2.size() > 0) {
-              watergoal = stoi(water_goal_string2);
-              water_goal_string = water_goal_string2;
-              update_water("0", total_water, percent_water, watergoal);
-              save_water_goal(watergoal);
-              current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
-              water_goal_string.clear();
-              water_goal_string2.clear();
-              water_goal_input.clear();
-              if(percent_water < 1) {
-                string water_string = to_string(percent_water * 100);
-                water_string = water_string.substr(0, 5);
-                perc_water_text.setString(water_string + " Percent of Goal");
-              } else
-                perc_water_text.setString("Water Goal Complete!");
-              display_settings_box = false;
-              display_water_goal = false;
-              water_goal_enter = false;
+              int watergoal2 = stoi(water_goal_string2);
+              if(watergoal2 != 0) {
+                watergoal = watergoal2;
+                water_goal_string = water_goal_string2;
+                update_water("0", total_water, percent_water, watergoal);
+                save_water_goal(watergoal);
+                current_watergoal.setString("Current Water Goal:\n" + to_string(watergoal) + " cups");
+                water_goal_string.clear();
+                water_goal_string2.clear();
+                water_goal_input.clear();
+                if(percent_water < 1) {
+                  string water_string = to_string(percent_water * 100);
+                  water_string = water_string.substr(0, 5);
+                  perc_water_text.setString(water_string + " Percent of Goal");
+                } else
+                  perc_water_text.setString("Water Goal Complete!");
+                display_settings_box = false;
+                display_water_goal = false;
+                water_goal_enter = false;
+              } else {
 
-            } else if (event.text.unicode == 8) {
-              if(water_goal_string2.size() > 0) {
-                water_goal_string2.pop_back();
-                water_goal_input.erase(water_goal_input.getSize() - 1, 1);
-                water_goal_output.setString(water_goal_input);
+                water_goal_string.clear();
+                water_goal_string2.clear();
+                water_goal_input.clear();
+                display_settings_box = false;
+                display_water_goal = false;
+                water_goal_enter = false;
               }
             }
+          } else if (event.text.unicode == 8) {
+            if(water_goal_string2.size() > 0) {
+              water_goal_string2.pop_back();
+              water_goal_input.erase(water_goal_input.getSize() - 1, 1);
+              water_goal_output.setString(water_goal_input);
+            }
           } else if (event.text.unicode == 27) {
-            water_goal_string2.clear();
-            water_goal_string.clear();
-            water_goal_input.clear();
-            display_settings_box = false;
-            display_water_goal = false;
-            water_goal_enter = false;
-          }
+          water_goal_string2.clear();
+          water_goal_string.clear();
+          water_goal_input.clear();
+          display_settings_box = false;
+          display_water_goal = false;
+          water_goal_enter = false;
         }
       }
+    }
 
 
 // CHECKING MOUSE POSITION/MOUSE CLICKS ON SHAPES
 
 // Check if in the water button region
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-        sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        sf::FloatRect bounds = water_button.getGlobalBounds();
-        if (bounds.contains(mouse)) {
-          flash_enter_water = true;
-          display_water_box = true;
-          water_enter = true;
-        }
+    if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+      sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+      sf::FloatRect bounds = water_button.getGlobalBounds();
+      if (bounds.contains(mouse)) {
+        input_text.clear();
+        display_settings_box = false;
+        display_water_goal = false;
+        enter_event_bool = false;
+        water_goal_enter = false;
+        flash_enter_water = true;
+        display_water_box = true;
+        water_enter = true;
       }
+    }
 
 
-      water_button.setFillColor(sf::Color::White);
+    water_button.setFillColor(sf::Color::White);
 
 // Check if in clear water area
-      if(clear_button.isMouseOver(window)) {
-        clear_button.setFillColor(sf::Color::Magenta);
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          clear_button.setFillColor(sf::Color::Red);
-          flash_clear_water = true;
-          total_water = 0;
-          percent_water = 0;
-          if (water_consumed.size() < 1) {
-            update_water("0", total_water, percent_water, watergoal);
-            string water_string = to_string(percent_water * 100);
-            water_string = water_string.substr(0, 5);
-            perc_water_text.setString(water_string + " Percent of Goal");
-          } else {
-            update_water(water_consumed, total_water, percent_water, watergoal);
-
-          }
+    if(clear_button.isMouseOver(window)) {
+      clear_button.setFillColor(sf::Color::Magenta);
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        clear_button.setFillColor(sf::Color::Red);
+        flash_clear_water = true;
+        total_water = 0;
+        percent_water = 0;
+        if (water_consumed.size() < 1) {
+          update_water("0", total_water, percent_water, watergoal);
+          string water_string = to_string(percent_water * 100);
+          water_string = water_string.substr(0, 5);
+          perc_water_text.setString(water_string + " Percent of Goal");
+        } else {
+          update_water(water_consumed, total_water, percent_water, watergoal);
 
         }
+
       }
-      clear_button.setFillColor(sf::Color::White);
+    }
+    clear_button.setFillColor(sf::Color::White);
 
 
 // Check if in add event area
-      if(event_add.isMouseOver(window)) {
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          enter_event_bool = true;
-        }
+    if(event_add.isMouseOver(window)) {
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        display_settings_box = false;
+        display_water_goal = false;
+        flash_enter_water = false;
+        display_water_box = false;
+        water_enter = false;
+        disp_text = false;
+        water_goal_enter = false;
+        water_enter = false;
+
+        enter_event_bool = true;
       }
+    }
 
 
 // Delete an event
-      if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-        for(int i = 0; i < calendar_buttons.size(); i++) {
-          if(calendar_buttons.at(i).isMouseOver(window)) {
-            delete_event_index = i;
-            delete_event_bool = true;
-            delete_event_text.setString("Delete this Event?\n" +
-                                        calendar.at(i).description + "\n" +
-                                        calendar.at(i).date + "\n" +
-                                        calendar.at(i).time);
-          }
-
+    if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+      for(int i = 0; i < calendar_buttons.size(); i++) {
+        if(calendar_buttons.at(i).isMouseOver(window)) {
+          delete_event_index = i;
+          delete_event_bool = true;
+          delete_event_text.setString("Delete this Event?\n" +
+                                      calendar.at(i).description + "\n" +
+                                      calendar.at(i).date + "\n" +
+                                      calendar.at(i).time);
         }
+
       }
+    }
 
 // Check if in settings area
-      if(settings.isMouseOver(window)) {
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          display_settings_box = true;
-          display_water_goal = true;
-          water_goal_enter = true;
+    if(settings.isMouseOver(window)) {
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        input_text.clear();
+        water_input.clear();
+        water_consumed.clear();
+        disp_text = false;
+        display_water_box = false;
+        water_enter = false;
+        enter_event_bool = false;
+        display_settings_box = true;
+        display_water_goal = false;
+        water_goal_enter = true;
 
-        }
       }
+    }
 
 // Check if in add event button
-      if(confirm_event_bool) {
-        if(yes.isMouseOver(window)) {
-          event_add.setFillColor(sf::Color::Magenta);
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            enter_event_bool = false;
-            confirm_event_bool = false;
-            add_event_bool = true;
+    if(confirm_event_bool) {
+      if(yes.isMouseOver(window)) {
+        event_add.setFillColor(sf::Color::Magenta);
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          enter_event_bool = false;
+          confirm_event_bool = false;
+          add_event_bool = true;
 
-          }
         }
       }
+    }
 
 // Check if in do not add event
-      if(confirm_event_bool) {
-        if(no.isMouseOver(window)) {
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            enter_event_bool = false;
-            confirm_event_bool = false;
-          }
+    if(confirm_event_bool) {
+      if(no.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          enter_event_bool = false;
+          confirm_event_bool = false;
         }
       }
+    }
 
 
 
 // Check if in delete event button
-      if(delete_event_bool) {
-        if(yes.isMouseOver(window)) {
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            calendar.erase(calendar.begin() + delete_event_index);
-            calendar_buttons.erase(calendar_buttons.begin() + delete_event_index);
-            delete_event_bool = false;
-          }
-        }
-      }
-
-// Check if in do not delete button
-      if(delete_event_bool) {
-        if(no.isMouseOver(window)) {
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            delete_event_bool = false;
-          }
-        }
-      }
-// Check if in go forward a week region
-      if(forward_week.isMouseOver(window)) {
+    if(delete_event_bool) {
+      if(yes.isMouseOver(window)) {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          increase_by_week = true;
+          calendar.erase(calendar.begin() + delete_event_index);
+          calendar_buttons.erase(calendar_buttons.begin() + delete_event_index);
+          delete_event_bool = false;
         }
       }
-
-// Check if in go back a week region
-      if(back_week.isMouseOver(window)) {
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-          reduce_by_week = true;
-        }
-      }
-
-// Check if water popup is closed
-      if(checker) {
-        if(close.isMouseOver(window)) {
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            checker = false;
-          }
-        }
-      }
-
-// Check if event reminder popup is closed
-      if(show_event_count) {
-        if(close_event_pop.isMouseOver(window)) {
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            show_event_count = false;
-          }
-        }
-      }
-
-// check is error message is closed
-      if(error_bool) {
-        if(close_error.isMouseOver(window)) {
-          if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            error_bool = false;
-          }
-        }
-      }
-
-// Close and save the calendar files
-      if (event.type == sf::Event::Closed) {
-        std::ofstream read_into_calendar("calendar.txt");
-        for (auto event : calendar) {
-          dashed = add_dashes(event.description);
-          read_into_calendar << event.date << " " << event.time << " " << dashed << "\n";
-        }
-        window.close();
-      }
-
     }
 
-    window.display();
+// Check if in do not delete button
+    if(delete_event_bool) {
+      if(no.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          delete_event_bool = false;
+        }
+      }
+    }
+// Check if in go forward a week region
+    if(forward_week.isMouseOver(window)) {
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        increase_by_week = true;
+      }
+    }
+
+// Check if in go back a week region
+    if(back_week.isMouseOver(window)) {
+      if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        reduce_by_week = true;
+      }
+    }
+
+// Check if water popup is closed
+    if(checker) {
+      if(close.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          checker = false;
+        }
+      }
+    }
+
+// Check if event reminder popup is closed
+    if(show_event_count) {
+      if(close_event_pop.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          show_event_count = false;
+        }
+      }
+    }
+
+// check is error message is closed
+    if(error_bool) {
+      if(close_error.isMouseOver(window)) {
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+          error_bool = false;
+        }
+      }
+    }
+
+// Close and save the calendar files
+    if (event.type == sf::Event::Closed) {
+      std::ofstream read_into_calendar("calendar.txt");
+      for (auto event : calendar) {
+        dashed = add_dashes(event.description);
+        read_into_calendar << event.date << " " << event.time << " " << dashed << "\n";
+      }
+      window.close();
+    }
+
   }
 
+  window.display();
+}
 
 
-  return 0;
+
+return 0;
 }
 
